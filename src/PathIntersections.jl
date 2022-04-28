@@ -56,7 +56,6 @@
 
 module PathIntersections
 
-using LinearAlgebra
 using StructArrays
 
 export Intersection
