@@ -55,13 +55,13 @@
 
 
 module PathIntersections
-
+using LinearAlgebra
 using StructArrays
 
 export Intersection
 
-export findPathIntersections
-export findPathIntersectionsSingle
+export find_path_intersections
+export find_path_intersections_single
 
 mutable struct Intersection
     s::Real
@@ -71,7 +71,7 @@ mutable struct Intersection
 end
 
 ## Helper Functions -------------------------------------------------------------
-function tightenBounds(pt_new, dim, coords, indices_lb, indices_ub)
+function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
     while indices_lb[dim] > 1 && pt_new[dim] <= coords[dim][indices_lb[dim]]
         indices_lb[dim] -= 1
     end
@@ -88,7 +88,7 @@ function tightenBounds(pt_new, dim, coords, indices_lb, indices_ub)
 end
 
 
-function secantSingleDim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arcTol::Real, curveParams::Any)
+function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arcTol::Real, curveParams::Any)
     pt_lb = curve(s_lb, curveParams)
     pt_ub = curve(s_ub, curveParams)
 
@@ -137,7 +137,7 @@ end
 
 
 # Function for finding multiple dim intersections against a single curve
-function findPathIntersectionsSingle(coords, curve::Function, ds::Real, arcTol::Real, singleTol::Real, curveParams::Any)
+function find_path_intersections_single(coords, curve::Function, ds::Real, arcTol::Real, singleTol::Real, curveParams::Any)
     numDim = length(coords)
     # Start walking along the curve at s = 0
     s = 0
@@ -208,11 +208,11 @@ function findPathIntersectionsSingle(coords, curve::Function, ds::Real, arcTol::
                         intersectionOccurred = true
                     # The new point crossed the lower bound
                     elseif pt_new[d] < coords[d][indices_lb[d]]
-                        s_intercept, pt_intercept = secantSingleDim(coords[d][indices_lb[d]], d, curve, s_new, s, arcTol, curveParams)
+                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arcTol, curveParams)
                         intersectionOccurred = true
                     # The new point crossed the upper bound
                     elseif pt_new[d] > coords[d][indices_ub[d]]
-                        s_intercept, pt_intercept = secantSingleDim(coords[d][indices_ub[d]], d, curve, s, s_new, arcTol, curveParams)
+                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arcTol, curveParams)
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
                     end # Otherwise, if no boundaries are crossed keep walking
@@ -245,12 +245,12 @@ function findPathIntersectionsSingle(coords, curve::Function, ds::Real, arcTol::
                         # For compound intersections: update the bounds in each dimension involved
                         for i = 1:numDim
                             if dim[i] == true # this dim participated in the compound intersection
-                                tightenBounds(pt_new, i, coords, indices_lb, indices_ub)
+                                tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
                             end
                         end # Update bounds for-loop
                     end # if intersection occurred
                 else # is oustide domain; keep bounds up to date
-                    tightenBounds(pt_new, d, coords, indices_lb, indices_ub)
+                    tighten_bounds(pt_new, d, coords, indices_lb, indices_ub)
                 end
             end # if intersection hasn't already been encountered
         end # d for-loop
@@ -267,12 +267,12 @@ function findPathIntersectionsSingle(coords, curve::Function, ds::Real, arcTol::
 end
 
 
-function findPathIntersections(coords, curves, ds, arcTol, singleTol, curveParams )
+function find_path_intersections(coords, curves, ds, arcTol, singleTol, curveParams )
     numCurves = length(curves)
     intersectionsByCurve = []
 
     for c = 1:numCurves
-        intersections = findPathIntersectionsSingle(coords, curves[c], ds[c], arcTol[c], singleTol[c], curveParams[c])
+        intersections = find_path_intersections_single(coords, curves[c], ds[c], arcTol[c], singleTol[c], curveParams[c])
         push!(intersectionsByCurve, intersections)
     end
     return intersectionsByCurve
