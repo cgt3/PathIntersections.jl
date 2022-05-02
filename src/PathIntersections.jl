@@ -31,7 +31,7 @@
 #                           point and the true intersection point is guaranteed to
 #                           be less than this value. Must have same dimension as 
 #                           'curves'.
-# singleTol               : The tolerance used to determine if a given dimension
+# single_tol               : The tolerance used to determine if a given dimension
 #                           participated in a previously found intersection.
 #
 # Outputs/Results:
@@ -88,9 +88,9 @@ function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
 end
 
 
-function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arc_tol::Real, curveParams::Any)
-    pt_lb = curve(s_lb, curveParams)
-    pt_ub = curve(s_ub, curveParams)
+function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arc_tol::Real, curve_params::Any)
+    pt_lb = curve(s_lb, curve_params)
+    pt_ub = curve(s_ub, curve_params)
 
     # So these variables persist past the while loop
     s_new = s_lb
@@ -100,7 +100,7 @@ function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function,
     while pt_dist > arc_tol
         # Find the secant intercept from s_lb and s_ub:
         s_new = (intercept - pt_lb[targetDim]) / (pt_ub[targetDim] - pt_lb[targetDim]) * (s_ub-s_lb) + s_lb;
-        pt_new = curve(s_new, curveParams)
+        pt_new = curve(s_new, curve_params)
 
         # Update one of the bounds with the new point
         if pt_new[targetDim] < intercept
@@ -116,7 +116,7 @@ function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function,
         # Update the other bound to be closer to avoid stalling under
         # the arc length condition
         s_avg = 0.5*(s_ub + s_lb)
-        pt_avg = curve(0.5*(s_ub + s_lb), curveParams)
+        pt_avg = curve(0.5*(s_ub + s_lb), curve_params)
         if s_ub != s_new && pt_avg[targetDim] > intercept
             s_ub = s_avg
             pt_ub = pt_avg
@@ -137,11 +137,11 @@ end
 
 
 # Function for finding multiple dim intersections against a single curve
-function find_path_intersections_single(coords, curve::Function, ds::Real, arc_tol::Real, singleTol::Real, curveParams::Any)
+function find_path_intersections_single(coords, curve::Function, ds::Real, arc_tol::Real, single_tol::Real, curve_params::Any)
     numDim = length(coords)
     # Start walking along the curve at s = 0
     s = 0
-    pt_curr = curve(s, curveParams)
+    pt_curr = curve(s, curve_params)
     
     # Find the indices to the closest mesh values in each dimension
     indices_ub = ones(Int, numDim)
@@ -208,11 +208,11 @@ function find_path_intersections_single(coords, curve::Function, ds::Real, arc_t
                         intersectionOccurred = true
                     # The new point crossed the lower bound
                     elseif pt_new[d] < coords[d][indices_lb[d]]
-                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol, curveParams)
+                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol, curve_params)
                         intersectionOccurred = true
                     # The new point crossed the upper bound
                     elseif pt_new[d] > coords[d][indices_ub[d]]
-                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arc_tol, curveParams)
+                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arc_tol, curve_params)
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
                     end # Otherwise, if no boundaries are crossed keep walking
@@ -221,13 +221,13 @@ function find_path_intersections_single(coords, curve::Function, ds::Real, arc_t
                         # If an intersection was encountered, check if it crossed boundaries in
                         # the other dimensions before adding it
                         for i = 1:numDim
-                            if abs(pt_intercept[i] - coords[i][indices_lb[i]]) < singleTol 
+                            if abs(pt_intercept[i] - coords[i][indices_lb[i]]) < single_tol 
                                 dim[i] = true
                                 indices[i] = indices_lb[i]
                                 if i != d
                                     compoundIntersection = true
                                 end
-                            elseif abs(pt_intercept[i] - coords[i][indices_ub[i]]) < singleTol 
+                            elseif abs(pt_intercept[i] - coords[i][indices_ub[i]]) < single_tol 
                                 dim[i] = true
                                 indices[i] = indices_ub[i]
                                 if i != d
@@ -265,19 +265,19 @@ function find_path_intersections_single(coords, curve::Function, ds::Real, arc_t
         end
         
         pt_curr = pt_new
-        pt_new = curve(s_new, curveParams)
+        pt_new = curve(s_new, curve_params)
     end # s while-loop
 
     return intersections
 end
 
 
-function find_path_intersections(coords, curves, ds, arc_tol, singleTol, curveParams )
+function find_path_intersections(coords, curves, ds, arc_tol, single_tol, curve_params )
     numCurves = length(curves)
     intersectionsByCurve = []
 
     for c = 1:numCurves
-        intersections = find_path_intersections_single(coords, curves[c], ds[c], arc_tol[c], singleTol[c], curveParams[c])
+        intersections = find_path_intersections_single(coords, curves[c], ds[c], arc_tol[c], single_tol[c], curve_params[c])
         push!(intersectionsByCurve, intersections)
     end
     return intersectionsByCurve
