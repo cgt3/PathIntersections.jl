@@ -258,7 +258,12 @@ function find_path_intersections_single(coords, curve::Function, ds::Real, arc_t
         # TODO: add adaptive stepping in s for curves with non-uniform arc-length per step?
         s = s_new
         s_new = s + ds
-            
+
+        # Make sure to test the endpoint
+        if s_new > 1 && s != 1
+            s_new = 1
+        end
+        
         pt_curr = pt_new
         pt_new = curve(s_new, curveParams)
     end # s while-loop
