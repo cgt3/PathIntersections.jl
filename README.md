@@ -25,6 +25,21 @@ The arguments are:
 - `single_tol`: the/an array of single-dimension tolerance(s) used for identifying if other dimensions participated in an intersecton (i.e. whether the intersection occurred at a corner). The array is indexed `single_tol[curve index]`.
 - `curve_params` : the/an array of parameters to be passed to the curve(s) along with `s`. While this is an optional argument for `find_path_intersections_single`, it is not optional for `find_path_intersections`, where an array indexed `curve_params[curve_index]` must be passed, even is it an array with `nothing` elements.
 
+
+### Assumptions
+1. Each array in the array of mesh coordinates, `coords`,
+    1. is sorted in increasing order (i.e. `coords[dim][i] < coords[dim][i+1]`),
+    2. does not contain duplicates, and
+    3. contains the start and end points of the domain in that dimension.
+2.  All curves start at `s = 0` and end at `s = 1`. These points will be checked regardless of the step size provided.
+3.  The provided step size is sufficiently small in comparison to the mesh for intersections to be sensed.
+
+### Notes:
+1. This package is only concerned with mesh-curve intersections, not curve-curve intersections.
+2. Intersections are returned sorted in increasing order according to their `s` values.
+3. Curves may start and arbitrarily enter and leave regions outside the domain defined by the mesh.
+
+
 ### Example Calls
     
 Generate an example 2D mesh.
@@ -68,19 +83,6 @@ The main tolerance used to find intersections. This tolerance is applied to the 
 The secondary tolerance for corner intersections. This tolerance is used to determine if another dimension participated in previously found intersection (i.e. to determine if the intersection went through a corner). It is applied to the distance between the previously estimated intersection point and the nearest mesh edge in the dimension being checked. It is, with the exception of folded intersections, a weaker condition than `arc_tol`.
 
 <img src="/figures/tolerances_corners.png" width="900">
-
-### Assumptions
-1. Each array in the array of mesh coordinates, `coords`,
-    1. is sorted in increasing order (i.e. `coords[dim][i] < coords[dim][i+1]`),
-    2. does not contain duplicates, and
-    3. contains the start and end points of the domain in that dimension.
-2.  All curves start at `s = 0` and end at `s = 1`. These points will be checked regardless of the step size provided.
-3.  The provided step size is sufficiently small in comparison to the mesh for intersections to be sensed.
-
-### Notes:
-1. This package is only concerned with mesh-curve intersections, not curve-curve intersections.
-2. Intersections are returned sorted in increasing order according to their `s` values.
-3. Curves may start and arbitrarily enter and leave regions outside the domain defined by the mesh.
 
 ## Supported Cases
 ### Simple, Single-Dimension Intersections
