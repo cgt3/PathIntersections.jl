@@ -66,18 +66,18 @@ intersections = find_path_intersections_single(coords, circle, ds, arc_tol, sing
 Find intersections for multiple curves:
 ```
 ds = [0.001, 0.0005, 0.01] # Can use different step sizes for each curve
-arc_tol = [1e-8, 1e-8, 1e-8] # use the same stopping tolerance though
+arc_tol = [1e-8, 1e-8, 1e-8] # Can also use all the same
 single_tol = [1e-8, 1e-8, 1e-8]
 curve_params = [nothing, (0.5, 1), (0.6, 0.2)]
 intersections_by_curve = find_path_intersections(coords [circle, ellipse, ellipse], ds, arc_tol, single_tol, curve_params)
 ```
 
-### Tolerance Defitions
+### Tolerance Definitions
 - `arc_tol`
 The main tolerance used to find intersections. This tolerance is applied to the Euclidean distance between the upper and lower bounds of the secant-bisection method at each iteration. The method stops when the Euclidean distance between these points is less than or equal to `arc_tol`.
 
 <p align="center">
-  <img src="/figures/tolerance_arcTol.png" width="700">
+  <img src="/figures/tolerance_arcTol.png" width="800">
 </p>
 
 
@@ -109,7 +109,7 @@ The secondary tolerance for corner intersections. This tolerance is used to dete
 </p>
 
 ## Unsupported and Degenerate Cases
-### Unsupported: General Non-simple Intersections
+### Unsupported: Non-simple Intersections
 
 <p align="center">
     <img src="/figures/intersections_nonSimple.png" width="700">
@@ -124,5 +124,5 @@ The secondary tolerance for corner intersections. This tolerance is used to dete
 ### Degenerate Input: Folded Intersections
 
 <p align="center">
-    <img src="/figures/tolerance_foldedIntersection.png" width="700">
+    <img src="/figures/tolerance_foldedIntersection.png" width="800">
 </p>
