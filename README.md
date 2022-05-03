@@ -77,7 +77,7 @@ intersections_by_curve = find_path_intersections(coords [circle, ellipse, ellips
 The main tolerance used to find intersections. This tolerance is applied to the Euclidean distance between the upper and lower bounds of the secant-bisection method at each iteration. The method stops when the Euclidean distance between these points is less than or equal to `arc_tol`.
 
 <p align="center">
-  <img src="/figures/tolerance_arcTol.png" width="500">
+  <img src="/figures/tolerance_arcTol.png" width="700">
 </p>
 
 
@@ -93,36 +93,36 @@ The secondary tolerance for corner intersections. This tolerance is used to dete
 ### Simple, Single-Dimension Intersections
 
 <p align="center">
-    <img src="/figures/intersection_simpleSingleDim.png" width="500">
+    <img src="/figures/intersection_simpleSingleDim.png" width="700">
 </p>
 
 ### Simple, Multiple-Dimension Intersections
 
 <p align="center">
-    <img src="/figures/intersection_simpleMultiDim.png" width="500">
+    <img src="/figures/intersection_simpleMultiDim.png" width="700">
 </p>
 
 ### Corners
 
 <p align="center">
-    <img src="/figures/intersection_corner.png" width="500">
+    <img src="/figures/intersection_corner.png" width="700">
 </p>
 
 ## Unsupported and Degenerate Cases
 ### Unsupported: General Non-simple Intersections
 
 <p align="center">
-    <img src="/figures/intersections_nonSimple.png" width="500">
+    <img src="/figures/intersections_nonSimple.png" width="700">
 </p>
 
 ### Unsupported: Bad Step Size
 
 <p align="center">
-    <img src="/figures/intersections_badStepSize.png" width="500">
+    <img src="/figures/intersections_badStepSize.png" width="700">
 </p>
 
 ### Degenerate Input: Folded Intersections
 
 <p align="center">
-    <img src="/figures/tolerance_foldedIntersection.png" width="500">
+    <img src="/figures/tolerance_foldedIntersection.png" width="700">
 </p>
