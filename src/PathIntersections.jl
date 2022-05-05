@@ -241,15 +241,18 @@ function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_t
                         push!(intersections, Intersection(s_intercept, pt_intercept, copy(dim), copy(indices)) )
                         intersectionIndex += 1
 
-                        # TODO: if the new point went past multiple bounds, find missing intersections
+                        # TODO: if the new point went past multiple bounds, find missing intersections?
+
                         # For compound intersections: update the bounds in each dimension involved
                         for i = 1:numDim
-                            if dim[i] == true # this dim participated in the compound intersection
-                                tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
-                            end
+                            # if dim[i] == true # this dim participated in the compound intersection
+                            #     tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
+                            # end
+                            
+                            tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
                         end # Update bounds for-loop
                     end # if intersection occurred
-                else # is oustide domain; keep bounds up to date
+                else # is outside domain; keep bounds up to date
                     tighten_bounds(pt_new, d, coords, indices_lb, indices_ub)
                 end
             end # if intersection hasn't already been encountered
