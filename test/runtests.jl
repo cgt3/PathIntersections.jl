@@ -78,6 +78,20 @@ using Revise
     @test length(intersections) == 0
 
     # 7. Curve that starts outside the domain then enters
+    circleParam = (; r=0.5, x0=1, y0=0)
+    intersections = find_mesh_intersections_single(coords, circle, ds, arc_tol, single_tol, circleParam )
+    @test length(intersections) == 3
+    @test intersections.s[1] == 0.25
+    @test intersections.s[2] == 0.5
+    @test intersections.s[3] == 0.75
 
     # 8. Curve that starts inside the domain then exits
+    circleParam = (; r=0.5, x0=-1, y0=0)
+    # Note the end point and start point are the same so it gets counted twice
+    intersections = find_mesh_intersections_single(coords, circle, ds, arc_tol, single_tol, circleParam )
+    @test length(intersections) == 4
+    @test intersections.s[1] == 0
+    @test intersections.s[2] == 0.25
+    @test intersections.s[3] == 0.75
+    @test intersections.s[4] == 1.0
 end
