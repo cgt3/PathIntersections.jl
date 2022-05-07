@@ -3,9 +3,7 @@ using Test
 
 using Revise
 
-@testset "PathIntersections.jl" begin
-    # Write your tests here.
-    
+@testset "PathIntersections.jl: find_mesh_intersections_single" begin
     x_coords = LinRange(-1,1,3)
     y_coords = LinRange(-1,1,3)
     coords = [x_coords, y_coords]
@@ -105,16 +103,36 @@ using Revise
     @test intersections.s[4] == 0.75
     @test intersections.s[5] == 1.0
 
-    # 10. Check processing multiple curves at once
+    # 10. Check a circle with a negative orientation
+    circle_noParams(s) = [0.5*cos(-2*pi*s), 0.5*sin(-2*pi*s)]
+    intersections = find_mesh_intersections_single(coords, circle_noParams, ds, arc_tol, single_tol)
+    @test length(intersections) == 5
+    @test intersections.s[1] == 0
+    @test intersections.s[2] == 0.25
+    @test intersections.s[3] == 0.5
+    @test intersections.s[4] == 0.75
+    @test intersections.s[5] == 1.0
+
+end
+
+@testset "PathIntersections.jl: find_mesh_intersections" begin
+    x_coords = LinRange(-1,1,3)
+    y_coords = LinRange(-1,1,3)
+    coords = [x_coords, y_coords]
+
+    # 1. Check processing multiple curves at once
     circleParams = (; r=0.5, x0=1, y0=0)
+    circle(s, params) = [params.r*cos(2*pi*s) + params.x0, params.r*sin(2*pi*s) + params.y0]
+    circle_noParams(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
+    
     curves = [circle, circle_noParams]
-    ds_array = [ds, ds]
-    arc_tol_array = [arc_tol, arc_tol]
-    single_tol_array = [single_tol, single_tol]
+    ds_array = [1/100, 1/100]
+    arc_tol_array = [1e-8, 1e-8]
+    single_tol_array = [1e-8, 1e-8]
     curveParams = [circleParams, nothing]
+
     intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, single_tol_array, curveParams)
     @test length(intersections_by_curve) == 2
     @test length(intersections_by_curve[1]) == 3
     @test length(intersections_by_curve[2]) == 5
-
 end
