@@ -55,6 +55,23 @@ using Revise
 
 
     # 4. Corners, x first, then y
+    x_coords = [-1, 0, 0.5*sqrt(2)/2, 1]
+    y_coords = [-1, 0, 0.5*sqrt(2)/2, 1]
+    ds = 1/100 # = 1deg
+    coords = [x_coords, y_coords]
+    circleParams3 = (; r=0.5, x0=0, y0=0)
+    
+    intersections = find_mesh_intersections_single(coords, circle, ds, arc_tol, single_tol, circleParam2 )
+    @test length(intersections) == 8
+    @test intersections.s[1] == 0
+    @test intersections.s[2] == 0.125
+    @test intersections.s[3] == 0.25
+    @test intersections.s[4] == 0.375
+    @test intersections.s[5] == 0.5
+    @test intersections.s[6] == 0.75
+    @test intersections.s[7] == 0.875
+    @test intersections.s[8] == 1.0
+    
 
     # 5. Corners, y first, then x 
 
