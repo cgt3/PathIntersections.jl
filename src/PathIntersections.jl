@@ -182,16 +182,17 @@ function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_t
         isInsideDomain = curr_isInsideDomain | new_isInsideDomain
 
         compoundIntersection = false
-        
+        wasOnBoundary = false
         for d = 1:numDim
             # WARNING: lines of intersection will be counted as a series of intersections
             #          that are ds distance apart
 
             # If the last intersection did not involve this dimension, check it for an
             # intersection
-            if !(compoundIntersection == true && intersections[intersectionIndex].dim[d] == true)
+            if compoundIntersection == false || intersections[intersectionIndex].dim[d] == false
                 dim[d] = false # Since using undef doesn't guarantee dim is initialized to false
                 intersectionOccurred = false
+                wasOnBoundary = false
                 indices = copy(indices_lb)
 
                 # If we're still inside the domain, check for an intersection; if not
@@ -201,11 +202,13 @@ function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_t
                     if pt_new[d] == coords[d][indices_lb[d]]
                         s_intercept, pt_intercept = s_new, pt_new
                         intersectionOccurred = true
+                        wasOnBoundary = true
                     # The new point is on the upper bound
                     elseif pt_new[d] == coords[d][indices_ub[d]]
                         s_intercept, pt_intercept = s_new, pt_new
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
+                        wasOnBoundary = true
                     # The new point crossed the lower bound
                     elseif pt_new[d] < coords[d][indices_lb[d]]
                         s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol, curve_params...)
@@ -244,12 +247,15 @@ function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_t
                         # TODO: if the new point went past multiple bounds, find missing intersections?
 
                         # For compound intersections: update the bounds in each dimension involved
+                        
+                        # tighten_bounds(pt_new, d, coords, indices_lb, indices_ub)
                         for i = 1:numDim
-                            # if dim[i] == true # this dim participated in the compound intersection
-                            #     tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
-                            # end
-                            
-                            tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
+                            # If the intersection was ON a boundary (rather than crossing it),
+                            # the bounds need to be updated with the next point and not the
+                            # current one
+                            if wasOnBoundary == false && dim[i] == true # this dim participated in the compound intersection
+                                tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
+                            end
                         end # Update bounds for-loop
                     end # if intersection occurred
                 else # is outside domain; keep bounds up to date
@@ -269,6 +275,14 @@ function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_t
         
         pt_curr = pt_new
         pt_new = curve(s_new, curve_params...)
+        
+        if wasOnBoundary == true
+            for d = 1:numDim
+                if dim[d] == true
+                    tighten_bounds(pt_new, d, coords, indices_lb, indices_ub)
+                end
+            end
+        end
     end # s while-loop
 
     return intersections
