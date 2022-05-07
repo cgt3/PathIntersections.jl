@@ -94,4 +94,14 @@ using Revise
     @test intersections.s[2] == 0.25
     @test intersections.s[3] == 0.75
     @test intersections.s[4] == 1.0
+
+    # 9. Check passing no parameters for the curve
+    curve(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
+    intersections = find_mesh_intersections_single(coords, curve, ds, arc_tol, single_tol)
+    @test length(intersections) == 5
+    @test intersections.s[1] == 0
+    @test intersections.s[2] == 0.25
+    @test intersections.s[3] == 0.5
+    @test intersections.s[4] == 0.75
+    @test intersections.s[5] == 1.0
 end
