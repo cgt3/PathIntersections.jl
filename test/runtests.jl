@@ -96,12 +96,25 @@ using Revise
     @test intersections.s[4] == 1.0
 
     # 9. Check passing no parameters for the curve
-    curve(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
-    intersections = find_mesh_intersections_single(coords, curve, ds, arc_tol, single_tol)
+    circle_noParams(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
+    intersections = find_mesh_intersections_single(coords, circle_noParams, ds, arc_tol, single_tol)
     @test length(intersections) == 5
     @test intersections.s[1] == 0
     @test intersections.s[2] == 0.25
     @test intersections.s[3] == 0.5
     @test intersections.s[4] == 0.75
     @test intersections.s[5] == 1.0
+
+    # 10. Check processing multiple curves at once
+    circleParams = (; r=0.5, x0=1, y0=0)
+    curves = [circle, circle_noParams]
+    ds_array = [ds, ds]
+    arc_tol_array = [arc_tol, arc_tol]
+    single_tol_array = [single_tol, single_tol]
+    curveParams = [circleParams, nothing]
+    intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, single_tol_array, curveParams)
+    @test length(intersections_by_curve) == 2
+    @test length(intersections_by_curve[1]) == 3
+    @test length(intersections_by_curve[2]) == 5
+
 end
