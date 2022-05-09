@@ -1,11 +1,8 @@
 # PathIntersections
 
 [![Build status](https://github.com/cgt3/PathIntersections.jl/workflows/CI/badge.svg)](https://github.com/cgt3/PathIntersections.jl/actions)
-[![Build Status](https://travis-ci.com/cgt3/PathIntersections.jl.svg?branch=main)](https://app.travis-ci.com/github/cgt3/PathIntersections.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/cgt3/PathIntersections.jl?svg=true)](https://ci.appveyor.com/project/cgt3/PathIntersections-jl)
 [![Coverage](https://codecov.io/gh/cgt3/PathIntersections.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/cgt3/PathIntersections.jl)
-[![Coverage](https://coveralls.io/repos/github/cgt3/PathIntersections.jl/badge.svg?branch=main)](https://coveralls.io/github/cgt3/PathIntersections.jl?branch=main)
-
 
 ## Introduction
 This package locates intersections between parameterized curves (paths) and Cartesian meshes in arbitrary dimension. The package locates intersections by walking along the curve using the user provided step size, `ds`, and sensing for boundary crossings. When a boundary is crossed, a hybrid bracketed secant-bisection method is used to determine the location of the intersection within the user-specified tolerances `arc_tol` and `single_tol`. 
