@@ -31,7 +31,7 @@
 #                           point and the true intersection point is guaranteed to
 #                           be less than this value. Must have same dimension as 
 #                           'curves'.
-# single_tol               : The tolerance used to determine if a given dimension
+# corner_tol               : The tolerance used to determine if a given dimension
 #                           participated in a previously found intersection.
 #
 # Outputs/Results:
@@ -136,7 +136,7 @@ end
 
 
 # Function for finding multiple dim intersections against a single curve
-function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Real, single_tol::Real, curve_params...)
+function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Real, corner_tol::Real, curve_params...)
     numDim = length(coords)
     # Start walking along the curve at s = 0
     s = 0
@@ -223,13 +223,13 @@ function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Rea
                         # If an intersection was encountered, check if it crossed boundaries in
                         # the other dimensions before adding it
                         for i = 1:numDim
-                            if abs(pt_intercept[i] - coords[i][indices_lb[i]]) < single_tol 
+                            if abs(pt_intercept[i] - coords[i][indices_lb[i]]) < corner_tol 
                                 dim[i] = true
                                 indices[i] = indices_lb[i]
                                 if i != d
                                     compoundIntersection = true
                                 end
-                            elseif abs(pt_intercept[i] - coords[i][indices_ub[i]]) < single_tol 
+                            elseif abs(pt_intercept[i] - coords[i][indices_ub[i]]) < corner_tol 
                                 dim[i] = true
                                 indices[i] = indices_ub[i]
                                 if i != d
@@ -288,15 +288,15 @@ function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Rea
 end
 
 
-function find_mesh_intersections(coords, curves::Array, ds, arc_tol, single_tol, curve_params )
+function find_mesh_intersections(coords, curves::Array, ds, arc_tol, corner_tol, curve_params )
     numCurves = length(curves)
     intersectionsByCurve = []
 
     for c = 1:numCurves
         if curve_params[c] !== nothing
-            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], single_tol[c], curve_params[c])
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c], curve_params[c])
         else
-            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], single_tol[c])
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c])
         end
         push!(intersectionsByCurve, intersections)
     end

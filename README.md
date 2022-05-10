@@ -5,7 +5,7 @@
 [![Coverage](https://codecov.io/gh/cgt3/PathIntersections.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/cgt3/PathIntersections.jl)
 
 ## Introduction
-This package locates intersections between parameterized curves (paths) and Cartesian meshes in arbitrary dimension. The package locates intersections by walking along the curve using the user provided step size, `ds`, and sensing for boundary crossings. When a boundary is crossed, a hybrid bracketed secant-bisection method is used to determine the location of the intersection within the user-specified tolerances `arc_tol` and `single_tol`. 
+This package locates intersections between parameterized curves (paths) and Cartesian meshes in arbitrary dimension. The package locates intersections by walking along the curve using the user provided step size, `ds`, and sensing for boundary crossings. When a boundary is crossed, a hybrid bracketed secant-bisection method is used to determine the location of the intersection within the user-specified tolerances `arc_tol` and `corner_tol`. 
 
 While the use of a bracketed method is robust in many situations, it does not allow all non-simple intersections to be found; cases that are currently unsupported or may result in unsatisfactory accuracy are noted below.
 
@@ -19,7 +19,7 @@ Arguments:
 
 - `ds` : the/an array of step size(s) use for walking along the curve. Arrays are to be indexed `ds[curve index]`.
 - `arc_tol` : the/an array of arc length tolerance(s) used as the stopping criteria for finding intersections. Arrays are to be indexed `arc_tol[curve index]`.
-- `single_tol`: the/an array of single-dimension tolerance(s) used for identifying if other dimensions participated in an intersecton (i.e. whether the intersection occurred at a corner). Arrays are to be indexed `single_tol[curve index]`.
+- `corner_tol`: the/an array of single-dimension tolerance(s) used for identifying if other dimensions participated in an intersecton (i.e. whether the intersection occurred at a corner). Arrays are to be indexed `corner_tol[curve index]`.
 - `curve_params` : the/an array of parameters to be passed to the curve(s) along with `s`. While this is an optional argument when called with a single curve, it is not optional for when calling with an array of curves, where it must be indexed `curve_params[curve_index]`, even if the array is filled with `nothing` elements.
 
 
@@ -55,18 +55,18 @@ ellipse(s, params) = [param.rx*cos(2*pi*s), param.ry*sin(2*pi*s)]  # Ellispe cen
 Find intersections for a single curve:
 ```
 ds = 0.001 # check every 0.36deg
-arc_tol, single_tol = 1e-8, 1e-8
+arc_tol, corner_tol = 1e-8, 1e-8
 
-intersections = find_mesh_intersections(coords, circle, ds, arc_tol, single_tol) # do not need to pass any parameters
+intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol) # do not need to pass any parameters
 ```
 
 Find intersections for multiple curves:
 ```
 ds = [0.001, 0.0005, 0.01] # Can use different step sizes for each curve
 arc_tol = [1e-8, 1e-8, 1e-8] # Can also use all the same
-single_tol = [1e-8, 1e-8, 1e-8]
+corner_tol = [1e-8, 1e-8, 1e-8]
 curve_params = [nothing, (0.5, 1), (0.6, 0.2)]
-intersections_by_curve = find_mesh_intersections(coords, [circle, ellipse, ellipse], ds, arc_tol, single_tol, curve_params)
+intersections_by_curve = find_mesh_intersections(coords, [circle, ellipse, ellipse], ds, arc_tol, corner_tol, curve_params)
 ```
 
 ### Tolerance Definitions
@@ -79,7 +79,7 @@ The main tolerance used to find intersections. This tolerance is applied to the 
 
 
 
-- `single_tol`
+- `corner_tol`
 The secondary tolerance for corner intersections. This tolerance is used to determine if another dimension participated in previously found intersection (i.e. to determine if the intersection went through a corner). It is applied to the distance between the previously estimated intersection point and the nearest mesh edge in the dimension being checked. It is, with the exception of folded intersections, a weaker condition than `arc_tol`.
 
 <p align="center">
