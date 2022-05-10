@@ -122,6 +122,40 @@ using Revise
             @test intersections.s[5] == 0.5
             @test intersections.s[6] == 0.75
             @test intersections.s[7] == 1.0
+        end
+
+        
+        # 10. Provide only the step size and allow the tolerances to default
+        @testset "Default tolerances" begin            
+            circle10(s) = circle(s, (; r=0.5, x0=0, y0=0))
+            x_coords = [-1.0 0.0 1.0]
+            y_coords = [-1.0 0.0 1.0]
+            coords = [x_coords, y_coords]
+
+            intersections = find_mesh_intersections(coords, circle10, ds)
+            @test length(intersections) == 5
+            @test intersections.s[1] == 0
+            @test intersections.s[2] == 0.25
+            @test intersections.s[3] == 0.5
+            @test intersections.s[4] == 0.75
+            @test intersections.s[5] == 1.0
+
+        end
+
+        # 11. Use default step size
+        @testset "Default step size and tolerances" begin            
+            circle11(s) = circle(s, (; r=0.5, x0=0, y0=0))
+            x_coords = [-1.0 0.0 1.0]
+            y_coords = [-1.0 0.0 1.0]
+            coords = [x_coords, y_coords]
+
+            intersections = find_mesh_intersections(coords, circle11)
+            @test length(intersections) == 5
+            @test intersections.s[1] == 0
+            @test intersections.s[2] == 0.25
+            @test intersections.s[3] == 0.5
+            @test intersections.s[4] == 0.75
+            @test intersections.s[5] == 1.0
 
         end
         
@@ -140,6 +174,59 @@ using Revise
             corner_tol_array = [1e-8, 1e-8]
 
             intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, corner_tol_array)
+            @test length(intersections_by_curve) == 2
+            @test length(intersections_by_curve[1]) == 3
+            @test length(intersections_by_curve[2]) == 5
+        end
+
+        @testset "Tuple of curves" begin
+            x_coords = LinRange(-1,1,3)
+            y_coords = LinRange(-1,1,3)
+            coords = [x_coords, y_coords]
+
+            # 1. Check processing multiple curves at once
+            circle1(s) = circle(s, (; r=0.5, x0=1, y0=0))
+
+            curves = (circle1, circle_noParams)
+            ds_array = (1/100, 1/100)
+            arc_tol_array = (1e-8, 1e-8)
+            corner_tol_array = (1e-8, 1e-8)
+
+            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, corner_tol_array)
+            @test length(intersections_by_curve) == 2
+            @test length(intersections_by_curve[1]) == 3
+            @test length(intersections_by_curve[2]) == 5
+        end
+        
+        @testset "Multiple curves, scalar step size, tolerances" begin
+            x_coords = LinRange(-1,1,3)
+            y_coords = LinRange(-1,1,3)
+            coords = [x_coords, y_coords]
+
+            # 1. Check processing multiple curves at once
+            circle1(s) = circle(s, (; r=0.5, x0=1, y0=0))
+
+            curves = (circle1, circle_noParams)
+            ds = 1/100
+            arc_tol = 1e-8
+            corner_tol = 1e-8
+
+            intersections_by_curve = find_mesh_intersections(coords, curves, ds, arc_tol, corner_tol)
+            @test length(intersections_by_curve) == 2
+            @test length(intersections_by_curve[1]) == 3
+            @test length(intersections_by_curve[2]) == 5
+        end
+        
+        @testset "Multiple curves, default step size, tolerances" begin
+            x_coords = LinRange(-1,1,3)
+            y_coords = LinRange(-1,1,3)
+            coords = [x_coords, y_coords]
+
+            # 1. Check processing multiple curves at once
+            circle1(s) = circle(s, (; r=0.5, x0=1, y0=0))
+
+            curves = (circle1, circle_noParams)
+            intersections_by_curve = find_mesh_intersections(coords, curves)
             @test length(intersections_by_curve) == 2
             @test length(intersections_by_curve[1]) == 3
             @test length(intersections_by_curve[2]) == 5

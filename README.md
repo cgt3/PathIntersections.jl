@@ -12,14 +12,30 @@ While the use of a bracketed method is robust in many situations, it does not al
 ## Usage and Examples
 The package provides the function `find_mesh_intersections` for finding intersections between a mesh and a single curve or a set of curves.
 
+Return values:
+- **Single curve**: A `StructArray` of `Intersection`s where the struct `Intersections` is defined:
+    ```
+    mutable struct Intersection
+        s::Real                      # The s-value where the intersection occurred
+        pt::AbstractArray{Real}      # The approximate intersection point
+        dim::Vector{Bool}            # Whether each dimension was involved in the intersection
+        I::AbstractArray{Real}       # The indices of the closest lower mesh bound or the       
+                                     # boundaries involved in the intersection
+    end
+    ```
+
+- **Multiple curves**: An array of `StructArray`s of `Intersection`s. There is one `StructArray` per curve with indexing: `intersections_by_curve[curve index][intersection index]`.
+
 Arguments:
 - `coords`: A Cartesian mesh, which is to be provided in the form of an array of arrays with indexing `coords[dimension][edge index]`. Note the mesh does not need to be uniform.
 
-- `curve`/`curves` : The curve/curves to be check against the mesh. The package expects curves to be callable using `pt = curve(s)` where `pt` is indexed `pt[dimension]`. For an array of curves the expected indexing/signature is `pt = curves[curve index](s)`.
+- `curve`/`curves` : The curve/curves to be check against the mesh. The package expects curves to be callable using `pt = curve(s)` where `pt` is indexed `pt[dimension]`. For an array/tuple of curves the expected indexing/signature is `pt = curves[curve index](s)`.
 
-- `ds` : the/an array of step size(s) use for walking along the curve. Arrays are to be indexed `ds[curve index]`.
-- `arc_tol` : the/an array of arc length tolerance(s) used as the stopping criteria for finding intersections. Arrays are to be indexed `arc_tol[curve index]`.
-- `corner_tol`: the/an array of single-dimension tolerance(s) used for identifying if other dimensions participated in an intersecton (i.e. whether the intersection occurred at a corner). Arrays are to be indexed `corner_tol[curve index]`.
+- `ds` : optional argument, the/an array of step size(s) use for walking along the curve. Arrays are to be indexed `ds[curve index]`. Defaults to the minimum of 1/1000 (note `s` is limited to [0,1]) or a value such that `norm(curve(s+ds) - curve(s))` is less than the minimum mesh spacing.
+
+- `arc_tol` : optional argument, the/an array of arc length tolerance(s) used as the stopping criteria for finding intersections. Arrays are to be indexed `arc_tol[curve index]`. Default is `100*eps(eltype(coords))`.
+
+- `corner_tol`: optional argument, the/an array of single-dimension tolerance(s) used for identifying if other dimensions participated in an intersecton (i.e. whether the intersection occurred at a corner). Arrays are to be indexed `corner_tol[curve index]`. Default is `100*eps(eltype(coords))`.
 
 
 ### Assumptions
