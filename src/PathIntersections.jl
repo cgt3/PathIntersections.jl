@@ -61,7 +61,6 @@ using StructArrays
 export Intersection
 
 export find_mesh_intersections
-export find_mesh_intersections_single
 
 mutable struct Intersection
     s::Real
@@ -137,7 +136,7 @@ end
 
 
 # Function for finding multiple dim intersections against a single curve
-function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_tol::Real, single_tol::Real, curve_params...)
+function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Real, single_tol::Real, curve_params...)
     numDim = length(coords)
     # Start walking along the curve at s = 0
     s = 0
@@ -289,15 +288,15 @@ function find_mesh_intersections_single(coords, curve::Function, ds::Real, arc_t
 end
 
 
-function find_mesh_intersections(coords, curves, ds, arc_tol, single_tol, curve_params )
+function find_mesh_intersections(coords, curves::Array, ds, arc_tol, single_tol, curve_params )
     numCurves = length(curves)
     intersectionsByCurve = []
 
     for c = 1:numCurves
         if curve_params[c] !== nothing
-            intersections = find_mesh_intersections_single(coords, curves[c], ds[c], arc_tol[c], single_tol[c], curve_params[c])
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], single_tol[c], curve_params[c])
         else
-            intersections = find_mesh_intersections_single(coords, curves[c], ds[c], arc_tol[c], single_tol[c])
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], single_tol[c])
         end
         push!(intersectionsByCurve, intersections)
     end
