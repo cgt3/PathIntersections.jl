@@ -12,7 +12,7 @@ using Revise
         ds = 1/100 # check every 3.6deg
         arc_tol = 1e-8
         single_tol = 1e-8
-        
+
         circle(s, param) = [param.r*cos(2*pi*s) + param.x0, param.r*sin(2*pi*s) + param.y0]
         circle_noParams(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
 
@@ -118,19 +118,22 @@ using Revise
             @test intersections.s[5] == 1.0
         end
 
-        # 10. Complete code coverage by tripping a intersection on a lower boundary
-        @testset "Lower bound intersections" begin
+        # 10. Complete code coverage by tripping intersections on lower boundaries
+        @testset "Lower bound intersections" begin            
+            circle_neg(s) = [0.5*cos(-2*pi*s), 0.5*sin(-2*pi*s)]
+            
             x_coords = [-1 0 1]
-            y_coords = [-1 -0.5 0 1]
+            y_coords = [-1 -0.5 circle_neg(2*ds)[2] 0 1]
             coords = [x_coords, y_coords]
-
-            intersections = find_mesh_intersections(coords, circle_noParams, ds, arc_tol, single_tol)
-            @test length(intersections) == 5
+            intersections = find_mesh_intersections(coords, circle_neg, ds, arc_tol, single_tol)
+            @test length(intersections) == 7
             @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.25
-            @test intersections.s[3] == 0.5
-            @test intersections.s[4] == 0.75
-            @test intersections.s[5] == 1.0
+            @test intersections.s[2] == 2*ds
+            @test intersections.s[3] == 0.25
+            @test intersections.s[5] == 0.5
+            @test intersections.s[6] == 0.75
+            @test intersections.s[7] == 1.0
+
         end
         
         # Tests sending multiple curves at once ------------------------------------------------

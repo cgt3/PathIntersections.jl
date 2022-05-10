@@ -113,7 +113,7 @@ The secondary tolerance for corner intersections. This tolerance is used to dete
 </p>
 
 ### Unsupported: Bad Step Size
-
+Note if the step size is too large wrt the mesh, intersections may be missed. Missed intersections will also occur if both the current and next point are on boundaries.
 <p align="center">
     <img src="/figures/intersections_badStepSize.png" width="700">
 </p>
