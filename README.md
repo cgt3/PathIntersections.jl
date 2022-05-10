@@ -66,7 +66,7 @@ ds = [0.001, 0.0005, 0.01] # Can use different step sizes for each curve
 arc_tol = [1e-8, 1e-8, 1e-8] # Can also use all the same
 single_tol = [1e-8, 1e-8, 1e-8]
 curve_params = [nothing, (0.5, 1), (0.6, 0.2)]
-intersections_by_curve = find_mesh_intersections(coords [circle, ellipse, ellipse], ds, arc_tol, single_tol, curve_params)
+intersections_by_curve = find_mesh_intersections(coords, [circle, ellipse, ellipse], ds, arc_tol, single_tol, curve_params)
 ```
 
 ### Tolerance Definitions
