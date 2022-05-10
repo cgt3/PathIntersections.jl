@@ -15,12 +15,11 @@ The package provides the function `find_mesh_intersections` for finding intersec
 Arguments:
 - `coords`: A Cartesian mesh, which is to be provided in the form of an array of arrays with indexing `coords[dimension][edge index]`. Note the mesh does not need to be uniform.
 
-- `curve`/`curves` : The curve/curves to be check against the mesh. The package expects curves to be callable using `pt = curve(s, curve_params...)` where `pt` is indexed `pt[dimension]`. For an array of curves the expected indexing/signature is `pt = curves[curve index](s, curve_params...)`.
+- `curve`/`curves` : The curve/curves to be check against the mesh. The package expects curves to be callable using `pt = curve(s)` where `pt` is indexed `pt[dimension]`. For an array of curves the expected indexing/signature is `pt = curves[curve index](s)`.
 
 - `ds` : the/an array of step size(s) use for walking along the curve. Arrays are to be indexed `ds[curve index]`.
 - `arc_tol` : the/an array of arc length tolerance(s) used as the stopping criteria for finding intersections. Arrays are to be indexed `arc_tol[curve index]`.
 - `corner_tol`: the/an array of single-dimension tolerance(s) used for identifying if other dimensions participated in an intersecton (i.e. whether the intersection occurred at a corner). Arrays are to be indexed `corner_tol[curve index]`.
-- `curve_params` : the/an array of parameters to be passed to the curve(s) along with `s`. While this is an optional argument when called with a single curve, it is not optional for when calling with an array of curves, where it must be indexed `curve_params[curve_index]`, even if the array is filled with `nothing` elements.
 
 
 ### Assumptions
@@ -57,7 +56,7 @@ Find intersections for a single curve:
 ds = 0.001 # check every 0.36deg
 arc_tol, corner_tol = 1e-8, 1e-8
 
-intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol) # do not need to pass any parameters
+intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol)
 ```
 
 Find intersections for multiple curves:
@@ -65,8 +64,9 @@ Find intersections for multiple curves:
 ds = [0.001, 0.0005, 0.01] # Can use different step sizes for each curve
 arc_tol = [1e-8, 1e-8, 1e-8] # Can also use all the same
 corner_tol = [1e-8, 1e-8, 1e-8]
-curve_params = [nothing, (0.5, 1), (0.6, 0.2)]
-intersections_by_curve = find_mesh_intersections(coords, [circle, ellipse, ellipse], ds, arc_tol, corner_tol, curve_params)
+ellipse1(s) = ellipse(s, (0.5,1))
+ellipse2(s) = ellipse(s, (0.6, 0.2))
+intersections_by_curve = find_mesh_intersections(coords, [circle, ellipse1, ellipse2], ds, arc_tol, corner_tol)
 ```
 
 ### Tolerance Definitions

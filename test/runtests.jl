@@ -17,8 +17,8 @@ using Revise
         circle_noParams(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
 
         @testset "Simple, single-dim" begin
-            circleParam1 = (; r=0.5, x0=0, y0=0.2)
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam1 )
+            circle1(s) = circle(s, (; r=0.5, x0=0, y0=0.2))
+            intersections = find_mesh_intersections(coords, circle1, ds, arc_tol, corner_tol)
 
             @test length(intersections) == 4
             @test intersections.s[1] == 0.25
@@ -28,8 +28,8 @@ using Revise
         # Note: start and end point are both counted, so their common intersection
         # gets counted twice
         @testset "Simple, single-dim; start/end pt on boundary" begin
-            circleParam = (; r=0.5, x0=0, y0=0)
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam )
+            circle2(s) = circle(s, (; r=0.5, x0=0, y0=0))
+            intersections = find_mesh_intersections(coords, circle2, ds, arc_tol, corner_tol)
             @test length(intersections) == 5
             @test intersections.s[1] == 0
             @test intersections.s[2] == 0.25
@@ -44,9 +44,9 @@ using Revise
             x_coords = [-1, 0, 0.5*sqrt(2)/2-epsilon, 1]
             y_coords = [-1, 0, 0.5*sqrt(2)/2-epsilon, 1]
             coords = [x_coords, y_coords]
-            circleParam = (; r=0.5, x0=0, y0=0)
+            circle3(s) = circle(s, (; r=0.5, x0=0, y0=0))
             
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam )
+            intersections = find_mesh_intersections(coords, circle3, ds, arc_tol, corner_tol)
             @test length(intersections) == 9
             @test intersections.s[1] == 0
             @test intersections.s[4] == 0.25
@@ -60,9 +60,9 @@ using Revise
             x_coords = [-1, 0, 0.5*sqrt(2)/2, 1]
             y_coords = [-1, 0, 0.5*sqrt(2)/2, 1]
             coords = [x_coords, y_coords]
-            circleParam = (; r=0.5, x0=0, y0=0)
+            circle4(s) = circle(s, (; r=0.5, x0=0, y0=0))
             
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam )
+            intersections = find_mesh_intersections(coords, circle4, ds, arc_tol, corner_tol)
             @test length(intersections) == 8
             @test intersections.s[1] == 0
             @test intersections.s[2] == 0.125
@@ -74,32 +74,32 @@ using Revise
             @test intersections.s[8] == 1.0
         end
 
-        # 6. Curve is completely outside the domain
+        # 5. Curve is completely outside the domain
         @testset "Curve out of bounds" begin
             x_coords = LinRange(-1,1,3)
             y_coords = LinRange(-1,1,3)
             coords = [x_coords, y_coords]
-            circleParam = (; r=0.5, x0=2, y0=2)
+            circle5(s) = circle(s, (; r=0.5, x0=2, y0=2))
             
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam )
+            intersections = find_mesh_intersections(coords, circle5, ds, arc_tol, corner_tol)
             @test length(intersections) == 0
         end
 
-        # 7. Curve that starts outside the domain then enters
+        # 6. Curve that starts outside the domain then enters
         @testset "Curve starts outside the domain" begin
-            circleParam = (; r=0.5, x0=1, y0=0)
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam )
+            circle6(s) = circle(s, (; r=0.5, x0=1, y0=0))
+            intersections = find_mesh_intersections(coords, circle6, ds, arc_tol, corner_tol)
             @test length(intersections) == 3
             @test intersections.s[1] == 0.25
             @test intersections.s[2] == 0.5
             @test intersections.s[3] == 0.75
         end
 
-        # 8. Curve that starts inside the domain then exits
+        # 7. Curve that starts inside the domain then exits
         @testset "Curve start inside domain then leaves" begin
-            circleParam = (; r=0.5, x0=-1, y0=0)
+            circle7(s) = circle(s, (; r=0.5, x0=-1, y0=0))
             # Note the end point and start point are the same so it gets counted twice
-            intersections = find_mesh_intersections(coords, circle, ds, arc_tol, corner_tol, circleParam )
+            intersections = find_mesh_intersections(coords, circle7, ds, arc_tol, corner_tol)
             @test length(intersections) == 4
             @test intersections.s[1] == 0
             @test intersections.s[2] == 0.25
@@ -107,18 +107,7 @@ using Revise
             @test intersections.s[4] == 1.0
         end
 
-        # 9. Check passing no parameters for the curve
-        @testset "No params passed to the curve" begin
-            intersections = find_mesh_intersections(coords, circle_noParams, ds, arc_tol, corner_tol)
-            @test length(intersections) == 5
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.25
-            @test intersections.s[3] == 0.5
-            @test intersections.s[4] == 0.75
-            @test intersections.s[5] == 1.0
-        end
-
-        # 10. Complete code coverage by tripping intersections on lower boundaries
+        # 9. Complete code coverage by tripping intersections on lower boundaries
         @testset "Lower bound intersections" begin            
             circle_neg(s) = [0.5*cos(-2*pi*s), 0.5*sin(-2*pi*s)]
             
@@ -143,15 +132,14 @@ using Revise
             coords = [x_coords, y_coords]
 
             # 1. Check processing multiple curves at once
-            circleParams = (; r=0.5, x0=1, y0=0)
+            circle1(s) = circle(s, (; r=0.5, x0=1, y0=0))
 
-            curves = [circle, circle_noParams]
+            curves = [circle1, circle_noParams]
             ds_array = [1/100, 1/100]
             arc_tol_array = [1e-8, 1e-8]
             corner_tol_array = [1e-8, 1e-8]
-            curveParams = [circleParams, nothing]
 
-            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, corner_tol_array, curveParams)
+            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, corner_tol_array)
             @test length(intersections_by_curve) == 2
             @test length(intersections_by_curve[1]) == 3
             @test length(intersections_by_curve[2]) == 5

@@ -87,9 +87,9 @@ function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
 end
 
 
-function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arc_tol::Real, curve_params...)
-    pt_lb = curve(s_lb, curve_params...)
-    pt_ub = curve(s_ub, curve_params...)
+function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arc_tol::Real)
+    pt_lb = curve(s_lb)
+    pt_ub = curve(s_ub)
 
     # So these variables persist past the while loop
     s_new = s_lb
@@ -99,7 +99,7 @@ function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function,
     while pt_dist > arc_tol
         # Find the secant intercept from s_lb and s_ub:
         s_new = (intercept - pt_lb[targetDim]) / (pt_ub[targetDim] - pt_lb[targetDim]) * (s_ub-s_lb) + s_lb;
-        pt_new = curve(s_new, curve_params...)
+        pt_new = curve(s_new)
 
         # Update one of the bounds with the new point
         if pt_new[targetDim] < intercept
@@ -115,7 +115,7 @@ function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function,
         # Update the other bound to be closer to avoid stalling under
         # the arc length condition
         s_avg = 0.5*(s_ub + s_lb)
-        pt_avg = curve(0.5*(s_ub + s_lb), curve_params...)
+        pt_avg = curve(0.5*(s_ub + s_lb))
         if s_ub != s_new && pt_avg[targetDim] > intercept
             s_ub = s_avg
             pt_ub = pt_avg
@@ -136,11 +136,11 @@ end
 
 
 # Function for finding multiple dim intersections against a single curve
-function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Real, corner_tol::Real, curve_params...)
+function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Real, corner_tol::Real)
     numDim = length(coords)
     # Start walking along the curve at s = 0
     s = 0
-    pt_curr = curve(s, curve_params...)
+    pt_curr = curve(s)
     
     # Find the indices to the closest mesh values in each dimension
     indices_ub = ones(Int, numDim)
@@ -210,11 +210,11 @@ function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Rea
                         wasOnBoundary = true
                     # The new point crossed the lower bound
                     elseif pt_new[d] < coords[d][indices_lb[d]]
-                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol, curve_params...)
+                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol)
                         intersectionOccurred = true
                     # The new point crossed the upper bound
                     elseif pt_new[d] > coords[d][indices_ub[d]]
-                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arc_tol, curve_params...)
+                        s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arc_tol)
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
                     end # Otherwise, if no boundaries are crossed keep walking
@@ -273,7 +273,7 @@ function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Rea
         end
         
         pt_curr = pt_new
-        pt_new = curve(s_new, curve_params...)
+        pt_new = curve(s_new)
         
         if wasOnBoundary == true
             for d = 1:numDim
@@ -288,16 +288,12 @@ function find_mesh_intersections(coords, curve::Function, ds::Real, arc_tol::Rea
 end
 
 
-function find_mesh_intersections(coords, curves::Array, ds, arc_tol, corner_tol, curve_params )
+function find_mesh_intersections(coords, curves::Array, ds, arc_tol, corner_tol)
     numCurves = length(curves)
     intersectionsByCurve = []
 
     for c = 1:numCurves
-        if curve_params[c] !== nothing
-            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c], curve_params[c])
-        else
-            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c])
-        end
+        intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c])
         push!(intersectionsByCurve, intersections)
     end
     return intersectionsByCurve
