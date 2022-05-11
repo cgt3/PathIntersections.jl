@@ -13,7 +13,7 @@ While the use of a bracketed method is robust in many situations, it does not al
 The package provides the function `find_mesh_intersections` for finding intersections between a mesh and a single curve or a set of curves.
 
 ### Return values:
-- **Single curve**: A `StructArray` of `Intersection`s where the struct `Intersections` is defined:
+- **Single curve**: An array of type `Intersection`'s where the struct `Intersections` is defined:
     ```
     mutable struct Intersection
         s::Real                      # The s-value where the intersection occurred
@@ -24,7 +24,7 @@ The package provides the function `find_mesh_intersections` for finding intersec
     end
     ```
 
-- **Multiple curves**: An array of `StructArray`s of `Intersection`s. There is one `StructArray` per curve with indexing: `intersections_by_curve[curve index][intersection index]`.
+- **Multiple curves**: An array of arrays of type `Intersection`'s. There is one array per curve with indexing: `intersections_by_curve[curve index][intersection index]`.
 
 ### Arguments:
 - `coords`: A Cartesian mesh, which is to be provided in the form of an array of arrays with indexing `coords[dimension][edge index]`. Note the mesh does not need to be uniform.

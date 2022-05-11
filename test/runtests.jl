@@ -21,8 +21,8 @@ using Revise
             intersections = find_mesh_intersections(coords, circle1, ds, arc_tol, corner_tol)
 
             @test length(intersections) == 4
-            @test intersections.s[1] == 0.25
-            @test intersections.s[3] == 0.75
+            @test intersections[1].s == 0.25
+            @test intersections[3].s == 0.75
         end
 
         # Note: start and end point are both counted, so their common intersection
@@ -31,11 +31,11 @@ using Revise
             circle2(s) = circle(s, (; r=0.5, x0=0, y0=0))
             intersections = find_mesh_intersections(coords, circle2, ds, arc_tol, corner_tol)
             @test length(intersections) == 5
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.25
-            @test intersections.s[3] == 0.5
-            @test intersections.s[4] == 0.75
-            @test intersections.s[5] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[2].s == 0.25
+            @test intersections[3].s == 0.5
+            @test intersections[4].s == 0.75
+            @test intersections[5].s == 1.0
         end
 
         # 3. Simple, multiple dim intersections
@@ -48,11 +48,11 @@ using Revise
             
             intersections = find_mesh_intersections(coords, circle3, ds, arc_tol, corner_tol)
             @test length(intersections) == 9
-            @test intersections.s[1] == 0
-            @test intersections.s[4] == 0.25
-            @test intersections.s[6] == 0.5
-            @test intersections.s[7] == 0.75
-            @test intersections.s[9] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[4].s == 0.25
+            @test intersections[6].s == 0.5
+            @test intersections[7].s == 0.75
+            @test intersections[9].s == 1.0
         end
 
         # 4. Corners, x first, then y
@@ -64,14 +64,14 @@ using Revise
             
             intersections = find_mesh_intersections(coords, circle4, ds, arc_tol, corner_tol)
             @test length(intersections) == 8
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.125
-            @test intersections.s[3] == 0.25
-            @test intersections.s[4] == 0.375
-            @test intersections.s[5] == 0.5
-            @test intersections.s[6] == 0.75
-            @test intersections.s[7] == 0.875
-            @test intersections.s[8] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[2].s == 0.125
+            @test intersections[3].s == 0.25
+            @test intersections[4].s == 0.375
+            @test intersections[5].s == 0.5
+            @test intersections[6].s == 0.75
+            @test intersections[7].s == 0.875
+            @test intersections[8].s == 1.0
         end
 
         # 5. Curve is completely outside the domain
@@ -90,9 +90,9 @@ using Revise
             circle6(s) = circle(s, (; r=0.5, x0=1, y0=0))
             intersections = find_mesh_intersections(coords, circle6, ds, arc_tol, corner_tol)
             @test length(intersections) == 3
-            @test intersections.s[1] == 0.25
-            @test intersections.s[2] == 0.5
-            @test intersections.s[3] == 0.75
+            @test intersections[1].s == 0.25
+            @test intersections[2].s == 0.5
+            @test intersections[3].s == 0.75
         end
 
         # 7. Curve that starts inside the domain then exits
@@ -101,10 +101,10 @@ using Revise
             # Note the end point and start point are the same so it gets counted twice
             intersections = find_mesh_intersections(coords, circle7, ds, arc_tol, corner_tol)
             @test length(intersections) == 4
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.25
-            @test intersections.s[3] == 0.75
-            @test intersections.s[4] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[2].s == 0.25
+            @test intersections[3].s == 0.75
+            @test intersections[4].s == 1.0
         end
 
         # 9. Complete code coverage by tripping intersections on lower boundaries
@@ -116,12 +116,12 @@ using Revise
             coords = [x_coords, y_coords]
             intersections = find_mesh_intersections(coords, circle_neg, ds, arc_tol, corner_tol)
             @test length(intersections) == 7
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 2*ds
-            @test intersections.s[3] == 0.25
-            @test intersections.s[5] == 0.5
-            @test intersections.s[6] == 0.75
-            @test intersections.s[7] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[2].s == 2*ds
+            @test intersections[3].s == 0.25
+            @test intersections[5].s == 0.5
+            @test intersections[6].s == 0.75
+            @test intersections[7].s == 1.0
         end
 
         
@@ -134,11 +134,11 @@ using Revise
 
             intersections = find_mesh_intersections(coords, circle10, ds)
             @test length(intersections) == 5
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.25
-            @test intersections.s[3] == 0.5
-            @test intersections.s[4] == 0.75
-            @test intersections.s[5] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[2].s == 0.25
+            @test intersections[3].s == 0.5
+            @test intersections[4].s == 0.75
+            @test intersections[5].s == 1.0
 
         end
 
@@ -151,11 +151,11 @@ using Revise
 
             intersections = find_mesh_intersections(coords, circle11)
             @test length(intersections) == 5
-            @test intersections.s[1] == 0
-            @test intersections.s[2] == 0.25
-            @test intersections.s[3] == 0.5
-            @test intersections.s[4] == 0.75
-            @test intersections.s[5] == 1.0
+            @test intersections[1].s == 0
+            @test intersections[2].s == 0.25
+            @test intersections[3].s == 0.5
+            @test intersections[4].s == 0.75
+            @test intersections[5].s == 1.0
 
         end
         
@@ -198,7 +198,7 @@ using Revise
             @test length(intersections_by_curve[2]) == 5
         end
         
-        @testset "Multiple curves, scalar step size, tolerances" begin
+        @testset "Multiple curves, scalar step size and tolerances" begin
             x_coords = LinRange(-1,1,3)
             y_coords = LinRange(-1,1,3)
             coords = [x_coords, y_coords]
@@ -217,7 +217,7 @@ using Revise
             @test length(intersections_by_curve[2]) == 5
         end
         
-        @testset "Multiple curves, default step size, tolerances" begin
+        @testset "Multiple curves, default step size and tolerances" begin
             x_coords = LinRange(-1,1,3)
             y_coords = LinRange(-1,1,3)
             coords = [x_coords, y_coords]

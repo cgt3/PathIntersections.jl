@@ -47,14 +47,14 @@ function find_mesh_intersections(coords,
     end
 
     # Walk along the curve, sensing for intersections in each dim
-    intersections = StructArray{Intersection}(undef, 0)
+    intersections = Intersection[]
     intersectionIndex = 0
     dim = Array{Bool,1}(undef, numDim)
 
     s_new = s
     pt_new = pt_curr
     while s <= 1
-        # Check is we are currently in the domain or crossing into or out of it
+        # Check if we are currently in the domain or crossing into or out of it
         curr_isInsideDomain = true
         new_isInsideDomain = true
         for d = 1:numDim
