@@ -43,8 +43,9 @@ The package provides the function `find_mesh_intersections` for finding intersec
     1. be sorted in increasing order (i.e. `coords[dim][i] < coords[dim][i+1]`),
     2. not contain duplicates, and
     3. contain the start and end points of the domain in that dimension.
-2.  All curves start at `s = 0` and end at `s = 1`. These points will be checked regardless of the step size provided.
-3.  The provided step size is sufficiently small in comparison to the mesh for intersections to be sensed.
+2. All curves start at `s = 0` and end at `s = 1` and are defined at every point in between. The end points will be checked regardless of the step size provided.
+3. The provided step size is sufficiently small in comparison to the mesh for all intersections to be sensed.
+4. Differentiability of the curve: When the step size, `ds`, is defaulted, the derivative of the curve will be evaluated in order to find a suitable step size using automatic differentiation as implemented in `ForwardDiff.jl`. If the curve or its derivative is not defined at certain points the resulting step size may be undesirable. 
 
 ### Notes:
 1. This package is (currently) only concerned with mesh-curve intersections, not curve-curve intersections.
