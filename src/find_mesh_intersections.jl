@@ -47,7 +47,7 @@ function find_mesh_intersections(coords,
     end
 
     # Walk along the curve, sensing for intersections in each dim
-    intersections = StructArray{Intersection}(undef, 0)
+    intersections = Intersection[]
     intersectionIndex = 0
     dim = Array{Bool,1}(undef, numDim)
 
