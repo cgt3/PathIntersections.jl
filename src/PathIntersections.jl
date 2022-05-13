@@ -62,8 +62,8 @@ using StructArrays
 
 const DEFAULT_DS = 0.0
 
-export Intersection
-mutable struct Intersection
+export MeshCurveIntersection
+mutable struct MeshCurveIntersection
     s::Real                      # The s-value where the intersection occurred
     pt::AbstractArray{Real}      # The approximate intersection point
     dim::Vector{Bool}            # Whether each dimension was involved in the intersection

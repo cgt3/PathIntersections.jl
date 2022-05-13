@@ -47,7 +47,7 @@ function find_mesh_intersections(coords,
     end
 
     # Walk along the curve, sensing for intersections in each dim
-    intersections = Intersection[]
+    intersections = MeshCurveIntersection[]
     intersectionIndex = 0
     dim = Array{Bool,1}(undef, numDim)
 
@@ -127,7 +127,7 @@ function find_mesh_intersections(coords,
                             end
                         end
                         
-                        push!(intersections, Intersection(s_intercept, pt_intercept, copy(dim), copy(indices)) )
+                        push!(intersections, MeshCurveIntersection(s_intercept, pt_intercept, copy(dim), copy(indices)) )
                         intersectionIndex += 1
 
                         # TODO: if the new point went past multiple bounds, find missing intersections?
