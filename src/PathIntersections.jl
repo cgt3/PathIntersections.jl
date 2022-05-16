@@ -70,6 +70,9 @@ export PiecewiseFunction
 export PiecewiseCurve
 include("PiecewiseCurve.jl")
 
+# For preset geometeries
+export PresetGeometries
+include("PresetGeometries.jl")
 
 export MeshIntersection
 mutable struct MeshIntersection
