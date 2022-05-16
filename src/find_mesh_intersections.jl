@@ -2,8 +2,8 @@ include("helper_functions.jl")
 
 # Function for finding multiple dim intersections against a single curve
 function find_mesh_intersections(coords, 
-    curve::Function,
-    ds::Union{Real,Function}=DEFAULT_DS,
+    curve::Union{Function, PiecewiseCurve},
+    ds::Union{Real,Function, PiecewiseFunction}=DEFAULT_DS,
     arc_tol::Real=100*eps(eltype(coords[1])),
     corner_tol::Real=100*eps(eltype(coords[1])))
 
@@ -175,7 +175,7 @@ end
 
 function find_mesh_intersections(coords,
     curves::Union{Array, Tuple}, 
-    ds::Union{Array, Tuple, Function, Real}=DEFAULT_DS, 
+    ds::Union{Array, Tuple, Function, PiecewiseFunction, Real}=DEFAULT_DS, 
     arc_tol::Union{Array, Tuple, Real}=100*eps(eltype(coords[1])), 
     corner_tol::Union{Array, Tuple, Real}=100*eps(eltype(coords[1])))
 

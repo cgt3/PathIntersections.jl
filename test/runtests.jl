@@ -273,4 +273,20 @@ using Revise
             @test length(intersections_by_curve[2]) == 5
         end
     end # testset: find_mesh_intersections
+
+
+    @testset "PiecewiseFunctions" begin
+        # Discontinuous
+        # Continuous
+    end
+
+    
+    @testset "PiecewiseCurves" begin
+        # Discontinuous
+        # Continuous
+        # Closed
+        # Not closed
+        # ds - arc length based
+        # ds - num steps
+    end
 end

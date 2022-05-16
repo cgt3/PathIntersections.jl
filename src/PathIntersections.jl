@@ -61,6 +61,15 @@ using LinearAlgebra
 using StructArrays
 
 const DEFAULT_DS = 0.0
+const DEFAULT_CONTINUITY_TOL = 1e-12
+
+
+# For defining geometeries
+export ConstFunction
+export PiecewiseFunction
+export PiecewiseCurve
+include("PiecewiseCurve.jl")
+
 
 export MeshIntersection
 mutable struct MeshIntersection

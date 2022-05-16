@@ -1,10 +1,3 @@
-module PiecewiseCurve
-
-export ConstFunction
-export PiecewiseFunction
-export PiecewiseCurve
-
-const DEFAULT_CONTINUITY_TOL = 1e-12
 
 struct ConstFunction
     value::Real
@@ -14,7 +7,7 @@ function (f::ConstFunction)(x)
     return f.value
 end
 
-struct PiecewiseFunction # Callable object
+struct PiecewiseFunction <:Function # Callable object
     stop_pts::Array # Warning: these must be in increasing order and include s = 0,1
     subfunctions::Array
     sub_x_bounds::Array
@@ -68,7 +61,7 @@ function (f::PiecewiseFunction)(x)
 end 
 
 
-struct PiecewiseCurve # Callable object for piecewise defined curves
+struct PiecewiseCurve <: # Callable object for piecewise defined curves
     stop_pts::Array # Warning: these must be in increasing order and include s = 0,1
     subcurves::Array
     sub_s_bounds::Array
@@ -183,6 +176,4 @@ function (curve::PiecewiseCurve)(s::Real)
     sub_s = (sub_s_bounds[2] - sub_s_bounds[1]) / (stop_pts[i+1] - stop_pts[i])*(s - stop_pts[i]) + sub_s_bounds[1]
     
     return subcurve[i](sub_s)
-end
-
 end
