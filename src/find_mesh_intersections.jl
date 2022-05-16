@@ -3,7 +3,7 @@ include("helper_functions.jl")
 # Function for finding multiple dim intersections against a single curve
 function find_mesh_intersections(coords, 
     curve::Function,
-    ds::Real=DEFAULT_DS,
+    ds::Union{Real,Function}=DEFAULT_DS,
     arc_tol::Real=100*eps(eltype(coords[1])),
     corner_tol::Real=100*eps(eltype(coords[1])))
 
@@ -47,7 +47,7 @@ function find_mesh_intersections(coords,
     end
 
     # Walk along the curve, sensing for intersections in each dim
-    intersections = MeshCurveIntersection[]
+    intersections = MeshIntersection[]
     intersectionIndex = 0
     dim = Array{Bool,1}(undef, numDim)
 
@@ -127,7 +127,7 @@ function find_mesh_intersections(coords,
                             end
                         end
                         
-                        push!(intersections, MeshCurveIntersection(s_intercept, pt_intercept, copy(dim), copy(indices)) )
+                        push!(intersections, MeshIntersection(s_intercept, pt_intercept, copy(dim), copy(indices)) )
                         intersectionIndex += 1
 
                         # TODO: if the new point went past multiple bounds, find missing intersections?
@@ -150,7 +150,7 @@ function find_mesh_intersections(coords,
         
         # TODO: add adaptive stepping in s for curves with non-uniform arc-length per step?
         s = s_new
-        s_new = s + ds
+        s_new = s + get_ds(ds,s)
 
         # Make sure to test the endpoint
         if s_new > 1 && s != 1
@@ -175,7 +175,7 @@ end
 
 function find_mesh_intersections(coords,
     curves::Union{Array, Tuple}, 
-    ds::Union{Array, Tuple, Real}=DEFAULT_DS, 
+    ds::Union{Array, Tuple, Function, Real}=DEFAULT_DS, 
     arc_tol::Union{Array, Tuple, Real}=100*eps(eltype(coords[1])), 
     corner_tol::Union{Array, Tuple, Real}=100*eps(eltype(coords[1])))
 
@@ -196,9 +196,16 @@ function find_mesh_intersections(coords,
     end
 
     # Process each curve
-    for c = 1:numCurves
-        intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c])
-        push!(intersectionsByCurve, intersections)
+    if typeof(ds) <: Function
+        for c = 1:numCurves
+            intersections = find_mesh_intersections(coords, curves[c], ds, arc_tol[c], corner_tol[c])
+            push!(intersectionsByCurve, intersections)
+        end
+    else
+        for c = 1:numCurves
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c])
+            push!(intersectionsByCurve, intersections)
+        end
     end
     return intersectionsByCurve
 end

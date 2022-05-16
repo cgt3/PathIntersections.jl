@@ -156,6 +156,26 @@ using Revise
             @test intersections[3].s == 0.5
             @test intersections[4].s == 0.75
             @test intersections[5].s == 1.0
+        end
+
+        
+        # 12. Using a function for the step size
+        @testset "Providing ds as a function; single curve" begin
+            # A curve where the arc length per constant step in s varies        
+            ellipse(s) = [0.5*cos(2*pi*s), 0.05*sin(2*pi*s)]
+            ds_func(s) = ds + ds*cos(2*pi*s)^2
+
+            x_coords = [-1.0 0.0 1.0]
+            y_coords = [-1.0 0.0 1.0]
+            coords = [x_coords, y_coords]
+
+            intersections = find_mesh_intersections(coords, ellipse, ds_func, arc_tol, corner_tol)
+            @test length(intersections) == 5
+            @test intersections[1].s == 0
+            @test intersections[2].s == 0.25
+            @test intersections[3].s == 0.5
+            @test intersections[4].s == 0.75
+            @test intersections[5].s == 1.0
 
         end
         
@@ -227,6 +247,27 @@ using Revise
 
             curves = (circle1, circle_noParams)
             intersections_by_curve = find_mesh_intersections(coords, curves)
+            @test length(intersections_by_curve) == 2
+            @test length(intersections_by_curve[1]) == 3
+            @test length(intersections_by_curve[2]) == 5
+        end
+
+        
+        @testset "Providing ds as a function; multiple curves" begin
+            x_coords = LinRange(-1,1,3)
+            y_coords = LinRange(-1,1,3)
+            coords = [x_coords, y_coords]
+
+            # 1. Check processing multiple curves at once
+            circle1(s) = circle(s, (; r=0.5, x0=1, y0=0))
+            ds_func(s) = ds + ds*cos(2*pi*s)^2
+
+            curves = (circle1, circle_noParams)
+            ds = 1/100
+            arc_tol = 1e-8
+            corner_tol = 1e-8
+
+            intersections_by_curve = find_mesh_intersections(coords, curves, ds_func, arc_tol, corner_tol)
             @test length(intersections_by_curve) == 2
             @test length(intersections_by_curve[1]) == 3
             @test length(intersections_by_curve[2]) == 5

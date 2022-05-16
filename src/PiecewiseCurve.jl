@@ -1,4 +1,4 @@
-module PiecewiseCurves
+module PiecewiseCurve
 
 export ConstFunction
 export PiecewiseFunction
@@ -126,7 +126,13 @@ struct PiecewiseCurve # Callable object for piecewise defined curves
 
         return new(input_stop_pts, input_subcurves, input_s_bounds, is_continuous, is_closed, arc_lengths, total_arc_length)
     end
+    
+    function PiecewiseCurve(input_stop_pts, input_subcurves; continuity_tol=DEFAULT_CONTINUITY_TOL)
+        input_s_bounds = @. [ (input_stop_pts[i], input_stop_pts[i+1]) for i=1:length(input_stop_pts)-1 ]
+        return PiecewiseFunction(input_stop_pts, input_subcurves, input_s_bounds, continuity_tol = continuity_tol)
+    end
 
+    # TODO: Should these be outside the struct definition?
     function ds_by_num_steps(curve::PiecewiseCurve, num_steps::Integer; continuity_tol=DEFAULT_CONTINUITY_TOL)
         # Determine how much of the curve's length comes from each of its segments
         # and use this fraction to allot steps.

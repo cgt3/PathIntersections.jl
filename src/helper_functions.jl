@@ -1,4 +1,12 @@
 ## Helper Functions -------------------------------------------------------------
+function get_ds(ds::Real, s::Real)
+    return ds
+end
+
+function get_ds(ds::Function, s::Real)
+    return ds(s)
+end
+
 function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
     while indices_lb[dim] > 1 && pt_new[dim] <= coords[dim][indices_lb[dim]]
         indices_lb[dim] -= 1
