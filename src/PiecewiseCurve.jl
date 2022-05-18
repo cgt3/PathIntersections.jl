@@ -27,14 +27,14 @@ struct PiecewiseFunction # Callable object
         is_continuous = true
         for i = 1:num_functions
             # Update continuity if needed
-            if i < num_functions && abs(input_subfunction[i](input_x_bounds[2]) - input_subfunction[i+1](input_x_bounds[1]) ) >= continuity_tol
+            if i < num_functions && norm(input_subfunctions[i](input_x_bounds[i][2]) - input_subfunctions[i+1](input_x_bounds[i+1][1]) ) >= continuity_tol
                 is_continuous = false
             end
 
             # TODO: Add an option for enforcing left-continuity at stop points instead of right?
-            # Check if the subfunctions are defined at their start points (the end point is assumed to below to the next curve)
-            if input_subfunction[i](input_x_bounds[1]) == NaN
-                is_continous = false
+            # Check if the subfunctions are defined at their start points (the end point is assumed to belong to the next curve)
+            if isnan( input_subfunctions[i](input_x_bounds[i][1]) )
+                is_continuous = false
             end
         end
         return new(input_stop_pts, input_subfunctions, input_x_bounds, is_continuous)
@@ -50,14 +50,18 @@ function (f::PiecewiseFunction)(x)
     # Find the subfunction to call
     i = 1 # Index to the closest stop point <= x
     # Note: left endpoints below to the current subfunction, right endpoints to the next function
-    while i < length(stop_pts) && x >= f.stop_pts[i+1]
+    while i < length(f.stop_pts) && x >= f.stop_pts[i+1]
         i += 1
     end 
 
     # Map x to the subfunctions's proper x value
-    sub_x = (sub_x_bounds[2] - sub_x_bounds[1]) / (stop_pts[i+1] - stop_pts[i])*(x - stop_pts[i]) + sub_x_bounds[1]
-    
-    return subfunction[i](sub_x)
+    if i == length(f.stop_pts)
+        i -= 1
+        sub_x = f.sub_x_bounds[i][2]
+    else
+        sub_x = (f.sub_x_bounds[i][2] - f.sub_x_bounds[i][1]) / (f.stop_pts[i+1] - f.stop_pts[i])*(x - f.stop_pts[i]) + f.sub_x_bounds[i][1]
+    end
+    return f.subfunctions[i](sub_x)
 end 
 
 

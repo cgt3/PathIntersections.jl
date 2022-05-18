@@ -278,7 +278,41 @@ using Revise
 
     @testset "PiecewiseFunctions" begin
         # Discontinuous
+        @testset "Discontinuous function" begin
+            subfunctions = [x->x, x->-x]
+            stop_pts = [-1, 0, 1]
+            sub_x_bounds = [[-2, 0], [4, 5]]
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_x_bounds)
+            @test func.is_continuous == false
+            @test func(-1) == -2
+            @test func(0) == -4
+            @test func(1) == -5
+        end
+
         # Continuous
+        @testset "Continuous function" begin
+            subfunctions = [x->x, x->-x]
+            stop_pts = [-1, 0, 1]
+            sub_x_bounds = [[-2, 0], [0, 2]]
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_x_bounds)
+            @test func.is_continuous == true
+            @test func(-1) == -2
+            @test func(0) == 0
+            @test func(1) == -2
+        end
+
+        
+        # Not defined at a stop point
+        @testset "Point discontinuities" begin
+            subfunctions = [x->x, x-> (x == 0) ? NaN : -x]
+            stop_pts = [-1, 0, 1]
+            sub_x_bounds = [[-2, 0], [0, 2]]
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_x_bounds)
+            @test func.is_continuous == false
+            @test func(-1) == -2
+            @test isnan(func(0))
+            @test func(1) == -2
+        end
     end
 
     
