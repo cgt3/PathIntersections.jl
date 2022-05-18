@@ -1,6 +1,7 @@
 using PathIntersections
 using Test
 
+using LinearAlgebra
 using Revise
 
 @testset "PathIntersections.jl" begin
@@ -288,5 +289,41 @@ using Revise
         # Not closed
         # ds - arc length based
         # ds - num steps
+    end
+
+    @testset "PresetGeometries" begin
+        TESTING_TOL = 1e-12
+        # Unit circle
+        @testset "Unit circle" begin
+            circle = PresetGeometries.unitCircle
+            @test norm(circle(0) - [1, 0]) < TESTING_TOL
+            @test norm(circle(0.25) - [0, 1]) < TESTING_TOL
+            @test norm(circle(0.5) - [-1, 0]) < TESTING_TOL
+            @test norm(circle(0.75) - [0, -1]) < TESTING_TOL
+            @test norm(circle(1.0) - [1, 0]) < TESTING_TOL
+        end
+
+        # Default pacman
+        @testset "Default pacman" begin
+            pacman = PresetGeometries.defaultPacman
+            @test length(pacman.stop_pts) == 4
+            @test pacman.is_continuous == true
+            @test pacman.is_closed == true
+            @test norm(pacman(0) - [0, 0]) < TESTING_TOL
+            @test norm(pacman(0.5) - [-1, 0]) < TESTING_TOL
+            @test norm(pacman(1) - [0, 0]) < TESTING_TOL
+            @test abs(pacman(0.1)[1] - pacman(0.1)[2]) < TESTING_TOL
+            @test abs(pacman(-0.1)[1] + pacman(-0.1)[2]) < TESTING_TOL
+        end
+
+        # Ellipse
+        @testset "Ellipse" begin
+            ellipse = PresetGeometries.customEllipse(rx=5, ry=3, x0=0, y0=5)
+            @test norm(ellipse(0)    - [5, 5]) < TESTING_TOL
+            @test norm(ellipse(0.25) - [0, 8]) < TESTING_TOL
+            @test norm(ellipse(0.5)  - [-5, 5]) < TESTING_TOL
+            @test norm(ellipse(0.75) - [0, 2]) < TESTING_TOL
+            @test norm(ellipse(1)    - [5, 5]) < TESTING_TOL
+        end
     end
 end
