@@ -41,7 +41,8 @@ struct PiecewiseFunction # Callable object
     end
 
     function PiecewiseFunction(input_stop_pts, input_subfunctions; continuity_tol=DEFAULT_CONTINUITY_TOL)
-        input_x_bounds = @. [ (input_stop_pts[i], input_stop_pts[i+1]) for i=1:length(input_stop_pts)-1 ]
+        num_curves = length(input_stop_pts) - 1
+        input_x_bounds = @. [ [input_stop_pts[i], input_stop_pts[i+1]] for i=1:num_curves ]
         return PiecewiseFunction(input_stop_pts, input_subfunctions, input_x_bounds, continuity_tol = continuity_tol)
     end
 end # PiecewiseFunction struct def

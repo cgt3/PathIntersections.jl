@@ -277,6 +277,19 @@ using Revise
 
 
     @testset "PiecewiseFunctions" begin
+        @testset "Invalid arguments" begin
+            # number of stop_pts doesn't match # of subfunctions
+            stop_pts = [0, 1, 2]
+            subcurves = [ x->x, x->1, x-> 3*x ]
+            sub_s_bounds = [ [0,1], [1,2] ]
+            @test_throws ErrorException PiecewiseFunction(stop_pts, subcurves, sub_s_bounds)
+            
+            # number of stop_pts doesn't match # of bounds
+            subcurves = [ x->x, x->1]
+            sub_s_bounds = [ [0,1] ]
+            @test_throws ErrorException PiecewiseFunction(stop_pts, subcurves, sub_s_bounds)
+        end
+
         # Discontinuous
         @testset "Discontinuous function" begin
             subfunctions = [x->x, x->-x]
@@ -313,11 +326,59 @@ using Revise
             @test isnan(func(0))
             @test func(1) == -2
         end
-    end
+
+        
+        # Default sub-bounds
+        @testset "Default sub-bounds" begin
+            subfunctions = [x->x, x->-x]
+            stop_pts = [-1, 0, 1]
+            func = PiecewiseFunction(stop_pts, subfunctions)
+            @test func.is_continuous == true
+            @test func.sub_x_bounds == [[-1,0], [0,1]]
+            @test func(-1) == -1
+            @test func(0) == 0
+            @test func(1) == -1
+        end
+    end # testset: PiecewiseFunctions
 
     
     @testset "PiecewiseCurves" begin
+        @testset "Invalid arguments" begin
+            # Bad start point
+            stop_pts = [0.5, 1]
+            subcurves = [ s->[2,s] ]
+            sub_s_bounds = [ [0,0.5] ]
+            @test_throws ErrorException PiecewiseCurve(stop_pts, subcurves, sub_s_bounds)
+
+            # Bad end point
+            stop_pts = [0, 0.5] 
+            @test_throws ErrorException PiecewiseCurve(stop_pts, subcurves, sub_s_bounds)
+
+            # Number of stop points doesn't match number of curves
+            stop_pts = [0, 0.5, 1] 
+            subcurves = [ s->[2,s], s->[3,s] ]
+            sub_s_bounds = [ [0,0.5] ]
+            @test_throws ErrorException PiecewiseCurve(stop_pts, subcurves, sub_s_bounds)
+
+            # Number of stop points doesn't match number of bounds
+            stop_pts = [0, 0.5, 1] 
+            sub_s_bounds = [ [0,0.5], [0.5, 1], [1, 1.5] ]
+            @test_throws ErrorException PiecewiseCurve(stop_pts, subcurves, sub_s_bounds)
+        end
+
         # Discontinuous
+        @testset "Discontinuous curve" begin
+            stop_pts = [0, 0.5, 1]
+            subcurves = [s->[2,s], s->[3,s]]
+            sub_s_bounds = [[0,0.5], [0.5, 1]]
+            curve = PiecewiseCurve(stop_pts, subcurves, sub_s_bounds)
+            @test curve.is_continuous == false
+            @test curve.is_closed == false
+            @test curve(0) == [2,0]
+            @test curve(0.5) == [3, 0.5]
+            @test curve(1) == [3, 1]
+        end
+        
         # Continuous
         # Closed
         # Not closed
