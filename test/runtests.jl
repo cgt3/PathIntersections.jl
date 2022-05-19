@@ -431,8 +431,6 @@ TESTING_TOL = 1e-12
             @test curve.is_closed == false
 
             ds_func = ds_by_num_steps(curve, 100)
-            println(ds_func(0))
-            println(ds_func(1))
             @test abs(ds_func(0) - 0.5/33) < TESTING_TOL
             @test abs(ds_func(1) - 0.5/67) < TESTING_TOL
         end
@@ -451,14 +449,13 @@ TESTING_TOL = 1e-12
 
         # Default pacman
         @testset "Default pacman" begin
-            circle = PresetGeometries.Circle(theta0=pi/4)
+            circle = PresetGeometries.Circle()
             pacman = PresetGeometries.Pacman()
             @test length(pacman.func.stop_pts) == 4
-            @test pacman(pacman.func.stop_pts[2]) == circle(0)
-            @test pacman(pacman.func.stop_pts[3]) == circle(3/4)
+            @test norm(pacman(pacman.func.stop_pts[2]) .- circle(0.125)) < TESTING_TOL
+            @test norm(pacman(pacman.func.stop_pts[3]) .- circle(0.875)) < TESTING_TOL
             @test pacman.func.is_continuous == true
             @test pacman.func.is_closed == true
-            print(pacman(0.5))
             @test norm(pacman(0)   .- (0, 0)) < TESTING_TOL
             @test norm(pacman(0.5) .- (-1, 0)) < TESTING_TOL
             @test norm(pacman(1)   .- (0, 0)) < TESTING_TOL
@@ -467,13 +464,22 @@ TESTING_TOL = 1e-12
         end
 
         # Ellipse
-        @testset "Ellipse" begin
+        @testset "Ellipse, default" begin
             ellipse = PresetGeometries.Ellipse(Rx=5, Ry=3, x0=0, y0=5)
             @test norm(ellipse(0)    .- (5, 5)) < TESTING_TOL
             @test norm(ellipse(0.25) .- (0, 8)) < TESTING_TOL
             @test norm(ellipse(0.5)  .- (-5, 5)) < TESTING_TOL
             @test norm(ellipse(0.75) .- (0, 2)) < TESTING_TOL
             @test norm(ellipse(1)    .- (5, 5)) < TESTING_TOL
+        end
+
+        @testset "Ellipse, rotated" begin
+            ellipse = PresetGeometries.Ellipse(Rx=5, Ry=3, theta0=pi/2)
+            @test norm(ellipse(0)    .- (0,5)) < TESTING_TOL
+            @test norm(ellipse(0.25) .- (-3,0)) < TESTING_TOL
+            @test norm(ellipse(0.5)  .- (0,-5)) < TESTING_TOL
+            @test norm(ellipse(0.75) .- (3,0)) < TESTING_TOL
+            @test norm(ellipse(1)    .- (0,5)) < TESTING_TOL
         end
     end # testset: PresetGeometries
 end

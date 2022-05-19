@@ -1,5 +1,7 @@
 module PresetGeometries
 
+import LinearAlgebra.norm
+
 import ..PiecewiseCurve
 
 # Note: these are callable structs
@@ -99,7 +101,10 @@ end
 
 # Make the structs callable
 function (E::Ellipse)(s) # Also does circles
-    return ( E.Rx*cos(E.orientation*2*pi*s + E.theta0) + E.x0, E.Ry*sin(E.orientation*2*pi*s + E.theta0) + E.y0)
+    (x,y) = (E.Rx*cos(E.orientation*2*pi*s), E.Ry*sin(E.orientation*2*pi*s))
+    r = norm((x,y))
+    theta = angle(x + y*im)
+    return (r*cos(theta + E.theta0) + E.x0, r*sin(theta + E.theta0) + E.y0)
 end
 
 function (L::Line)(s)

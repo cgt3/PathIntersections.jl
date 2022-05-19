@@ -8,7 +8,7 @@ using PathIntersections
 
 ## Curve parameters ------------------------------------------------------------------
 circle = PresetGeometries.Circle(R=0.2, x0=-0.5, y0=0.5)
-ellipse = PresetGeometries.Ellipse(Rx=0.4, Ry=0.2, x0=0.5, y0=0.5, theta0=pi/4)
+ellipse = PresetGeometries.Ellipse(Rx=0.4, Ry=0.2, x0=0.5, y0=0.5, theta0=pi/4, orientation=-1)
 pacman = PresetGeometries.Pacman(R=0.5, y0=-0.3, first_jaw=pi/4, second_jaw=7pi/4, orientation=1)
 
 ## Intersection search parameters ----------------------------------------------------
@@ -21,8 +21,9 @@ coords = [x_coords, y_coords]
 
 arc_tol = 1e-8
 corner_tol = 1e-8
-ds = [1/100, 1/100, 1/300]
-curves = [circle, ellipse, pacman];
+ds = [1/100, 1/100]#, 1/300]
+# curves = [circle, ellipse, pacman];
+curves = [circle, ellipse]#, pacman];
 
 intersections_by_curve = find_mesh_intersections(coords, curves, ds, arc_tol, corner_tol)
 
