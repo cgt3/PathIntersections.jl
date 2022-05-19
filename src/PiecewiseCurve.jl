@@ -128,7 +128,7 @@ function ds_by_num_steps(curve::PiecewiseCurve, num_steps; continuity_tol=DEFAUL
     # Determine how much of the curve's length comes from each of its segments
     # and use this fraction to allot steps.
     length_fractions = curve.arc_lengths / curve.total_arc_length
-    steps_by_segment = trunc.(num_steps * length_fractions + 0.5)
+    steps_by_segment = trunc.(Int,num_steps * length_fractions .+ 0.5)
 
     # Modify the number of steps on the last segment to make sure the correct
     # number of steps is returned.
@@ -139,10 +139,11 @@ function ds_by_num_steps(curve::PiecewiseCurve, num_steps; continuity_tol=DEFAUL
     # calculate ds for each segment
     subfunctions = ConstFunction[]
     for i = 1:length(curve.subcurves)
-        push!(subfunctions, ConstFunction(curve.arc_length[i]) / steps_by_segment[i])
+        ds_value = (curve.stop_pts[i+1] - curve.stop_pts[i]) / steps_by_segment[i]
+        push!(subfunctions, ConstFunction(ds_value))
     end
 
-    return PiecewiseFunction(curve.stop_pts, subfunctions, continuity_tol)
+    return PiecewiseFunction(curve.stop_pts, subfunctions, continuity_tol=continuity_tol)
 end
 
 function ds_by_arc_length(curve::PiecewiseCurve, step_arc_length; continuity_tol=DEFAULT_CONTINUITY_TOL)

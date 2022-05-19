@@ -421,6 +421,21 @@ TESTING_TOL = 1e-12
         end
 
         # ds - num steps
+        @testset "ds: num step based" begin
+            stop_pts = [0, 0.5, 1]
+            # has total length 3, with the second segment having length 2
+            subcurves = [s->[1,s], s->[2,2*s]]
+            sub_bounds = [[0,1], [1, 2]]
+            curve = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
+            @test curve.is_continuous == false
+            @test curve.is_closed == false
+
+            ds_func = ds_by_num_steps(curve, 100)
+            println(ds_func(0))
+            println(ds_func(1))
+            @test abs(ds_func(0) - 0.5/33) < TESTING_TOL
+            @test abs(ds_func(1) - 0.5/67) < TESTING_TOL
+        end
     end
 
     @testset "PresetGeometries" begin
