@@ -276,70 +276,80 @@ using Revise
     end # testset: find_mesh_intersections
 
 
-    # @testset "PiecewiseFunctions" begin
-    #     @testset "Invalid arguments" begin
-    #         # number of stop_pts doesn't match # of subfunctions
-    #         stop_pts = (0, 1, 2)
-    #         subcurves = ( x->x, x->1, x-> 3*x )
-    #         sub_bounds = ( (0,1), (1,2) )
-    #         @test_throws ErrorException PiecewiseFunction(stop_pts, subcurves, sub_bounds)
+    @testset "PiecewiseFunctions" begin
+        @testset "Invalid arguments" begin
+            # number of stop_pts doesn't match # of subfunctions
+            stop_pts = (0, 0.5, 1)
+            subcurves = ( x->x, x->1, x-> 3*x )
+            sub_bounds = ( (0,1), (1,2) )
+            @test_throws ErrorException PiecewiseFunction(stop_pts, subcurves, sub_bounds)
             
-    #         # number of stop_pts doesn't match # of bounds
-    #         subcurves = ( x->x, x->1)
-    #         sub_bounds = ( (0,1) )
-    #         @test_throws ErrorException PiecewiseFunction(stop_pts, subcurves, sub_bounds)
-    #     end
+            # number of stop_pts doesn't match # of bounds
+            subcurves = ( x->x, x->1)
+            sub_bounds = ( (0,1), )
+            @test_throws ErrorException PiecewiseFunction(stop_pts, subcurves, sub_bounds)
+        end
 
-    #     # Discontinuous
-    #     @testset "Discontinuous function" begin
-    #         subfunctions = (x->x, x->-x)
-    #         stop_pts = (-1, 0, 1)
-    #         sub_bounds = ((-2, 0), (4, 5))
-    #         func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
-    #         @test func.is_continuous == false
-    #         @test func(-1) == -2
-    #         @test func(0) == -4
-    #         @test func(1) == -5
-    #     end
+        # Discontinuous
+        @testset "Discontinuous function" begin
+            subfunctions = (x->x, x->-x)
+            stop_pts = (-1, 0, 1)
+            sub_bounds = ((-2, 0), (4, 5))
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
+            @test func.is_continuous == false
+            @test func(-1) == -2
+            @test func(0) == -4
+            @test func(1) == -5
+        end
 
-    #     # Continuous
-    #     @testset "Continuous function" begin
-    #         subfunctions = (x->x, x->-x)
-    #         stop_pts = (-1, 0, 1)
-    #         sub_bounds = ((-2, 0), (0, 2))
-    #         func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
-    #         @test func.is_continuous == true
-    #         @test func(-1) == -2
-    #         @test func(0) == 0
-    #         @test func(1) == -2
-    #     end
-
-        
-    #     # Not defined at a stop point
-    #     @testset "Point discontinuities" begin
-    #         subfunctions = (x->x, x-> (x == 0) ? NaN : -x)
-    #         stop_pts = (-1, 0, 1)
-    #         sub_bounds = ((-2, 0), (0, 2))
-    #         func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
-    #         @test func.is_continuous == false
-    #         @test func(-1) == -2
-    #         @test isnan(func(0))
-    #         @test func(1) == -2
-    #     end
+        # Continuous
+        @testset "Continuous function" begin
+            subfunctions = (x->x, x->-x)
+            stop_pts = (-1, 0, 1)
+            sub_bounds = ((-2, 0), (0, 2))
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
+            @test func.is_continuous == true
+            @test func(-1) == -2
+            @test func(0) == 0
+            @test func(1) == -2
+        end
 
         
-    #     # Default sub-bounds
-    #     @testset "Default sub-bounds" begin
-    #         subfunctions = (x->x, x->-x)
-    #         stop_pts = (-1, 0, 1)
-    #         func = PiecewiseFunction(stop_pts, subfunctions)
-    #         @test func.is_continuous == true
-    #         @test func.sub_bounds == ((-1,0), (0,1))
-    #         @test func(-1) == -1
-    #         @test func(0) == 0
-    #         @test func(1) == -1
-    #     end
-    # end # testset: PiecewiseFunctions
+        # Not defined at a stop point
+        @testset "Point discontinuities" begin
+            subfunctions = (x->x, x-> (x == 0) ? NaN : -x)
+            stop_pts = (-1, 0, 1)
+            sub_bounds = ((-1, 0), (0, 1))
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
+            @test func.is_continuous == false
+            @test func(-1) == -1
+            @test isnan(func(0))
+            @test func(1) == -1
+
+            
+            subfunctions = (x->x, x-> (x == 1) ? NaN : -x)
+            stop_pts = (-1, 0, 1)
+            sub_bounds = ((-1, 0), (0, 1))
+            func = PiecewiseFunction(stop_pts, subfunctions, sub_bounds)
+            @test func.is_continuous == false
+            @test func(-1) == -1
+            @test func(0) == 0
+            @test isnan(func(1))
+        end
+
+        
+        # Default sub-bounds
+        @testset "Default sub-bounds" begin
+            subfunctions = (x->x, x->-x)
+            stop_pts = (-1, 0, 1)
+            func = PiecewiseFunction(stop_pts, subfunctions)
+            @test func.is_continuous == true
+            @test func.sub_bounds == [(-1,0), (0,1)]
+            @test func(-1) == -1
+            @test func(0) == 0
+            @test func(1) == -1
+        end
+    end # testset: PiecewiseFunctions
 
     
     @testset "PiecewiseCurves" begin
