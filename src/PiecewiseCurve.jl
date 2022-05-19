@@ -145,11 +145,11 @@ function ds_by_num_steps(curve::PiecewiseCurve, num_steps; continuity_tol=DEFAUL
     return PiecewiseFunction(curve.stop_pts, subfunctions, continuity_tol)
 end
 
-function ds_by_arc_length(curve::PiecewiseCurve, step_arc_length::Real; continuity_tol::Real=DEFAULT_CONTINUITY_TOL)
+function ds_by_arc_length(curve::PiecewiseCurve, step_arc_length; continuity_tol=DEFAULT_CONTINUITY_TOL)
     subfunctions = ConstFunction[]
     for i = 1:length(curve.subcurves)
         subvalue = (curve.sub_bounds[i][2] - curve.sub_bounds[i][1]) / (curve.arc_lengths[i] / step_arc_length)
         push!(subfunctions, ConstFunction(subvalue))
     end
-    return PiecewiseFunction(curve.stop_pts, subfunctions, continuity_tol)
+    return PiecewiseFunction(curve.stop_pts, subfunctions, continuity_tol=continuity_tol)
 end

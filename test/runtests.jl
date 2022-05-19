@@ -4,6 +4,8 @@ using Test
 using LinearAlgebra
 using Revise
 
+TESTING_TOL = 1e-12
+
 @testset "PathIntersections.jl" begin
     @testset "find_mesh_intersections" begin
         x_coords = LinRange(-1,1,3)
@@ -404,24 +406,24 @@ using Revise
         end
 
         # ds - arc length based
-        # @testset "ds: arc length based" begin
-            # stop_pts = [0, 0.5, 1]
-            # # has total length 2, but the second segment moves twice as fast
-            # subcurves = [s->[1,s], s->[2,2*s]]
-            # sub_bounds = [[0,1], [1, 1.5]]
-            # curve = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
-            # @test curve.is_continuous == false
-            # @test curve.is_closed == false
+        @testset "ds: arc length based" begin
+            stop_pts = [0, 0.5, 1]
+            # has total length 2, but the second segment moves twice as fast
+            subcurves = [s->[1,s], s->[2,2*s]]
+            sub_bounds = [[0,1], [1, 1.5]]
+            curve = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
+            @test curve.is_continuous == false
+            @test curve.is_closed == false
 
-            # ds_func = ds_by_arc_length(curve, 0.1)
-            # @test ds_func(0) == 0.1
-            # @test ds_func(1) == 0.05
-        # end
+            ds_func = ds_by_arc_length(curve, 0.1)
+            @test abs(ds_func(0) - 0.1) < TESTING_TOL
+            @test abs(ds_func(1) - 0.05) < TESTING_TOL
+        end
+
         # ds - num steps
     end
 
     @testset "PresetGeometries" begin
-        TESTING_TOL = 1e-12
         # Unit circle
         @testset "Default circle" begin
             circle = PresetGeometries.Circle()
