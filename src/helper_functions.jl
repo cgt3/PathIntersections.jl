@@ -1,9 +1,9 @@
 ## Helper Functions -------------------------------------------------------------
-function get_ds(ds::Real, s::Real)
+function get_ds(ds::Real, s)
     return ds
 end
 
-function get_ds(ds::Function, s::Real)
+function get_ds(ds::Function, s)
     return ds(s)
 end
 
@@ -24,7 +24,7 @@ function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
 end
 
 
-function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function, s_lb::Real, s_ub::Real, arc_tol::Real)
+function secant_single_dim(intercept, targetDim, curve, s_lb, s_ub, arc_tol)
     pt_lb = curve(s_lb)
     pt_ub = curve(s_ub)
 
@@ -35,7 +35,7 @@ function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function,
     pt_dist = arc_tol + 1;
     while pt_dist > arc_tol
         # Find the secant intercept from s_lb and s_ub:
-        s_new = (intercept - pt_lb[targetDim]) / (pt_ub[targetDim] - pt_lb[targetDim]) * (s_ub-s_lb) + s_lb;
+        s_new = (intercept - pt_lb[targetDim]) / (pt_ub[targetDim] - pt_lb[targetDim]) * (s_ub - s_lb) + s_lb;
         pt_new = curve(s_new)
 
         # Update one of the bounds with the new point
@@ -65,7 +65,7 @@ function secant_single_dim(intercept::Real, targetDim::Integer, curve::Function,
 
         # Calculate the Euclidean distance between the two bounds to check
         # against tol
-        pt_dist = norm(pt_ub - pt_lb,2)
+        pt_dist = norm(pt_ub .- pt_lb,2)
     end
 
     return s_new, pt_new

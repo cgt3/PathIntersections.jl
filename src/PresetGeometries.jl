@@ -2,78 +2,112 @@ module PresetGeometries
 
 import ..PiecewiseCurve
 
-# Note: these functions return functions or PiecewiseCurves
-export customCircle
-export customEllipse
-export customPacman
+# Note: these are callable structs
+export Line, Ellipse, Circle, Pacman
 
-# Note: these functions are curves
-export circle, ellipse, line
-export unitCircle
-export defaultPacman
+export CurveOrientation
+@enum CurveOrientation pos=1 neg=-1
 
-# Non-exported functions
-function circle(s::Real, radius::Real, x0::Real, y0::Real)
-    return [radius*cos(2*pi*s) + x0, radius*sin(2*pi*s) + y0]
+abstract type PresetGeometry end
+
+struct Line{T_start, T_end} <: Function
+    start_pt::T_start
+    end_pt::T_end
 end
 
-function ellipse(s::Real, rx::Real, ry::Real, x0::Real, y0::Real, offset_angle::Real)
-    return [rx*cos(2*pi*s+offset_angle) + x0, ry*sin(2*pi*s+offset_angle) + y0]
+struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
+    Rx::T_Rx
+    Ry::T_Ry
+    x0::T_x0
+    y0::T_y0
+    theta0::T_theta0
+    orientation::T_orientation #CurveOrientation
 end
 
-function line(s::Real, start_pt::Union{Array, Tuple}, end_pt::Union{Array, Tuple})
-    return [(end_pt[1] - start_pt[1])*s + start_pt[1], (end_pt[2] - start_pt[2])*s + start_pt[2] ] 
+# Needed to default arguments
+function Ellipse(; Rx=1, Ry=1, x0=0, y0=0, theta0=0, orientation=1)
+    return Ellipse(Rx, Ry, x0, y0, theta0, orientation)
 end
 
-function customCircle(; radius::Real=1, x0::Real=0, y0::Real=0)
-    return s->circle(s, radius, x0, y0)
+const Circle{T_R, T_x0, T_y0, T_theta0, T_orientation} = Ellipse{T_R, T_R, T_x0, T_y0, T_theta0, T_orientation}
+function Circle(; R=1, x0=0, y0=0, theta0=0, orientation=1)
+    return Ellipse(R, R, x0, y0, theta0, orientation)
 end
 
-function customEllipse(; rx::Real=1, ry::Real=1, x0::Real=0, y0::Real=0, offset_angle::Real=0)
-    return s->ellipse(s, rx, ry, x0, y0, offset_angle)
+struct Pacman{T_radius, T_first, T_second, T_x0, T_y0, T_orientation} <: Function
+    R::T_radius
+    first_jaw::T_first
+    second_jaw::T_second
+    x0::T_x0
+    y0::T_y0
+    orientation::T_orientation #CurveOrientation
+    func # should not be set by users; calculated by the constructor
 end
 
-
-function customPacman(; radius::Real=1, x0::Real=0, y0::Real=0, upper_jaw::Real=pi/4, lower_jaw::Real=-pi/4)
-    # Enforce upper_jaw < lower_jaw
-    while lower_jaw < 0
-        lower_jaw += 2*pi
+# Constructor to enforce first/second_jaw in [0,2pi] for constructing func,
+# the PiecewiseCurve function
+function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientation=1)
+    # Enforce first_jaw in [0, 2pi]
+    first_jaw_bounded = first_jaw
+    while first_jaw_bounded < 0
+        first_jaw_bounded += 2*pi
     end
-    while upper_jaw < 0
-        upper_jaw += 2*pi
+    while first_jaw_bounded > 2*pi
+        first_jaw_bounded -= 2*pi
     end
 
-    if upper_jaw == lower_jaw
-        lower_jaw = upper_jaw + 2*pi
-    elseif upper_jaw > lower_jaw
-        swap = upper_jaw
-        upper_jaw = lower_jaw
-        lower_jaw = swap
+    # Enforce second_jaw in [0, 2pi]
+    second_jaw_bounded = second_jaw
+    while second_jaw_bounded < 0
+        second_jaw_bounded += 2*pi
+    end
+    while second_jaw_bounded > 2*pi
+        second_jaw_bounded -= 2*pi
     end
 
     # Compute the s values at the corners by balancing arc-length
-    total_arc_length = 2*pi*radius / (2*pi - (upper_jaw-lower_jaw)) + 2*radius
-    s1 = radius / total_arc_length
-    s2 = (total_arc_length - radius) / total_arc_length
+    jaw_diff = second_jaw_bounded - first_jaw_bounded
+    if orientation*sign(jaw_diff) == -1
+        if sign(jaw_diff) == 1
+            jaw_diff = 2*pi - (second_jaw_bounded - first_jaw_bounded)
+        else
+            jaw_diff = 2*pi + (second_jaw_bounded - first_jaw_bounded)
+        end
+    end
 
-    # Compute the jaw corner point locations
-    upper_corner = radius*cos(upper_jaw)+x0, radius*sin(upper_jaw)+y0
-    lower_corner = radius*cos(lower_jaw)+x0, radius*sin(lower_jaw)+y0
+    total_arc_length = R*(2*pi - abs(jaw_diff)) + 2*R
+    s1 = R / total_arc_length
+    s2 = (total_arc_length - R) / total_arc_length
 
-    # Create arrays for the PiecewiseCurve
-    stop_pts = [0, s1, s2, 1]
-    subcurves = [(s->line(s, [x0,y0], upper_corner)), 
-                 (s->circle(s, radius, x0, y0)), 
-                 (s->line(s, lower_corner, [x0,y0]))
-                ];
-    s_bounds = [ [0,1], [upper_jaw/(2*pi), lower_jaw/(2*pi)], [0,1] ]
-    # return PiecewiseCurve(copy(stop_pts), copy(subcurves), copy(s_bounds))
+    # Compute the jaw corner point locations for the lines
+    circle_ref = Circle(R=R, x0=x0, y0=y0)
+    first_corner = circle_ref(first_jaw_bounded/(2*pi))
+    second_corner = circle_ref(second_jaw_bounded/(2*pi))
     
-    pacman = PiecewiseCurve(stop_pts, subcurves, s_bounds)
-    return pacman
+    # Create arrays for the PiecewiseCurve
+    stop_pts = (0, s1, s2, 1)
+    subcurves = ( Line((x0,y0), first_corner), 
+                  Circle(R=R, x0=x0, y0=y0, orientation=orientation), 
+                  Line(second_corner, (x0,y0))
+                );
+
+    s_bounds = ( (0,1), (orientation*first_jaw_bounded/(2*pi), (orientation*first_jaw_bounded + abs(jaw_diff))/(2*pi)), (0,1) )
+    
+    func = PiecewiseCurve(stop_pts, subcurves, s_bounds)
+    return Pacman(R, first_jaw_bounded, second_jaw_bounded, x0, y0, orientation, func)
 end
 
-unitCircle = customCircle()
-defaultPacman = customPacman()
+# Make the structs callable
+function (E::Ellipse)(s) # Also does circles
+    return ( E.Rx*cos(E.orientation*2*pi*s + E.theta0) + E.x0, E.Ry*sin(E.orientation*2*pi*s + E.theta0) + E.y0)
+end
+
+function (L::Line)(s)
+    return ( (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] ) 
+end
+
+function (p::Pacman)(s)
+    return p.func(s)
+end
     
 end # module

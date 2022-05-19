@@ -68,6 +68,8 @@ const DEFAULT_CONTINUITY_TOL = 1e-12
 export ConstFunction
 export PiecewiseFunction
 export PiecewiseCurve
+export ds_by_num_steps
+export ds_by_arc_length
 include("PiecewiseCurve.jl")
 
 # For preset geometeries
@@ -76,11 +78,11 @@ include("PresetGeometries.jl")
 
 export MeshIntersection
 mutable struct MeshIntersection
-    s::Real                      # The s-value where the intersection occurred
-    pt::AbstractArray{Real}      # The approximate intersection point
-    dim::Vector{Bool}            # Whether each dimension was involved in the intersection
-    I::AbstractArray{Real}       # The indices of the closest lower mesh bound or the       
-                                 # boundaries involved in the intersection
+    s       # The s-value where the intersection occurred
+    pt      # The approximate intersection point
+    dim     # Whether each dimension was involved in the intersection
+    I       # The indices of the closest lower mesh bound or the       
+            # boundaries involved in the intersection
 end
 
 export find_mesh_intersections
