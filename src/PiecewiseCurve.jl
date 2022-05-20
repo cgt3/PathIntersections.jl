@@ -97,11 +97,13 @@ end
 
 function (curve::PiecewiseCurve)(s)
     # Wrap s back to [0,1]
-    if curve.enforce_bounds == true && (s > 1 || s < -1) # => bring s to [-1, 1]
-        s = s - trunc(Int,s)
-    end
-    if curve.enforce_bounds == true && s < 0 # => brings s to [0,1]
-        s = 1 + s
+    if curve.enforce_bounds == true 
+        while s > 1 # brings s to (-Inf, 1]
+            s -= 1
+        end
+        while s < 0 # brings s to [0, 1]
+            s += 1
+        end
     end
 
     # Find the curve to operate on

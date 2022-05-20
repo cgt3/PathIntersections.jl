@@ -404,6 +404,15 @@ TESTING_TOL = 1e-12
             @test curve(0.75) == (0,0)
             @test curve(1) == (1,0)
         end
+        
+        # Curves wrap inputs to s in [0,1]
+        @testset "Curves wraps s to [0,1]" begin
+            stop_pts = (0, 1)
+            subcurves = (s->s,)
+            curve = PiecewiseCurve(stop_pts, subcurves)
+            @test curve(1) == curve(2)
+            @test curve(-1) == curve(0)
+        end
 
         # ds - arc length based
         @testset "ds: arc length based" begin
@@ -469,14 +478,32 @@ TESTING_TOL = 1e-12
             # Negative angles
             pacman = PresetGeometries.Pacman(first_jaw=-7*pi/4, second_jaw=-pi/4) # same as 45->(-45)
             @test length(pacman.func.stop_pts) == 4
-            @test norm(pacman.first_jaw - pi/4) < TESTING_TOL
-            @test norm(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+            @test abs(pacman.first_jaw - pi/4) < TESTING_TOL
+            @test abs(pacman.second_jaw - 7*pi/4) < TESTING_TOL
 
             # Angles over 2pi
             pacman = PresetGeometries.Pacman(first_jaw=9*pi/4, second_jaw=15pi/4) # same as 45->(-45)
             @test length(pacman.func.stop_pts) == 4
-            @test norm(pacman.first_jaw - pi/4) < TESTING_TOL
-            @test norm(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+            @test abs(pacman.first_jaw - pi/4) < TESTING_TOL
+            @test abs(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+        end
+
+        
+        # "Pacman" can also be a pizza slice
+        @testset "Pizza slice Pacman" begin
+            # Negative orientation
+            pacman = PresetGeometries.Pacman(first_jaw=pi/4, second_jaw=-pi/4, orientation=-1)
+            @test length(pacman.func.stop_pts) == 4
+            @test abs(pacman.first_jaw - pi/4) < TESTING_TOL
+            @test abs(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+            @test norm(pacman(0.5) .- (1,0)) < TESTING_TOL
+
+            # Positive orientation
+            pacman = PresetGeometries.Pacman(first_jaw=0, second_jaw=pi/2) 
+            @test length(pacman.func.stop_pts) == 4
+            @test abs(pacman.first_jaw - 0) < TESTING_TOL
+            @test abs(pacman.second_jaw - pi/2) < TESTING_TOL
+            @test norm(pacman(0.5) .- (sqrt(2)/2, sqrt(2)/2)) < TESTING_TOL
         end
 
         # Ellipse
