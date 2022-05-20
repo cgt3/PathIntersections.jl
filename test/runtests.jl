@@ -463,6 +463,22 @@ TESTING_TOL = 1e-12
             @test abs(pacman(-0.1)[1] .+ pacman(-0.1)[2]) < TESTING_TOL
         end
 
+        
+        # Pacman with non-standard angles
+        @testset "Pacman: non-standard angles" begin
+            # Negative angles
+            pacman = PresetGeometries.Pacman(first_jaw=-7*pi/4, second_jaw=-pi/4) # same as 45->(-45)
+            @test length(pacman.func.stop_pts) == 4
+            @test norm(pacman.first_jaw - pi/4) < TESTING_TOL
+            @test norm(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+
+            # Angles over 2pi
+            pacman = PresetGeometries.Pacman(first_jaw=9*pi/4, second_jaw=15pi/4) # same as 45->(-45)
+            @test length(pacman.func.stop_pts) == 4
+            @test norm(pacman.first_jaw - pi/4) < TESTING_TOL
+            @test norm(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+        end
+
         # Ellipse
         @testset "Ellipse, default" begin
             ellipse = PresetGeometries.Ellipse(Rx=5, Ry=3, x0=0, y0=5)
