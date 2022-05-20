@@ -71,9 +71,9 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientatio
     jaw_diff = second_jaw_bounded - first_jaw_bounded
     if orientation*sign(jaw_diff) == -1
         if sign(jaw_diff) == 1
-            jaw_diff = 2*pi - (second_jaw_bounded - first_jaw_bounded)
+            jaw_diff = 2*pi - jaw_diff
         else
-            jaw_diff = 2*pi + (second_jaw_bounded - first_jaw_bounded)
+            jaw_diff = 2*pi + jaw_diff
         end
     end
 
