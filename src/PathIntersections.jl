@@ -63,7 +63,6 @@ using StructArrays
 const DEFAULT_DS = 0.0
 const DEFAULT_CONTINUITY_TOL = 1e-12
 
-
 # For defining geometeries
 export ConstFunction
 export PiecewiseFunction
@@ -76,6 +75,7 @@ include("PiecewiseCurve.jl")
 export PresetGeometries
 include("PresetGeometries.jl")
 
+# For finding mesh-curve intersections
 export MeshIntersection
 mutable struct MeshIntersection
     s       # The s-value where the intersection occurred
@@ -88,4 +88,9 @@ end
 export find_mesh_intersections
 include("find_mesh_intersections.jl")
 
+# For mapping quadrature rules to curves
+export map_line_quadrature
+export map_line_quadrature_consecutive
+export map_line_quadrature_multiple
+include("map_line_quadrature.jl")
 end # module
