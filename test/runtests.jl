@@ -1,6 +1,7 @@
 using PathIntersections
 using Test
 
+using GaussQuadrature
 using LinearAlgebra
 using Revise
 

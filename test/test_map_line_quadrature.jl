@@ -1,5 +1,3 @@
-using GaussQuadrature
-
 TESTING_TOL = 1e-15
 
 @testset "Quadrature Mapping" begin
