@@ -50,7 +50,7 @@ TESTING_TOL = 1e-15
         line(s) = [s, s] # simple linear function
         stop_pts = [-1, 0, 1] # Yields 2 intervals, [-1,0], [0,1]
 
-        line_pts, line_wts, normals = map_line_quadrature_consecutive((ref_pts, ref_wts), line, stop_pts, normalization_all=true)
+        line_pts, line_wts, normals = map_line_quadrature((ref_pts, ref_wts), line, stop_pts, normalization_all=true)
         @test length(line_wts) == 2
         @test length(line_pts) == 2
         @test length(normals) == 2
@@ -89,7 +89,7 @@ TESTING_TOL = 1e-15
         line(s) = [s, s] # simple linear function
         s_bounds = [(-1, 0), (0, 1)] # Yields 2 intervals, [-1,0], [0,1]
 
-        line_pts, line_wts, normals = map_line_quadrature_multiple((ref_pts, ref_wts), line, s_bounds, normalization_all=true)
+        line_pts, line_wts, normals = map_line_quadrature((ref_pts, ref_wts), line, s_bounds, normalization_all=true)
         @test length(line_wts) == 2
         @test length(line_pts) == 2
         @test length(normals) == 2

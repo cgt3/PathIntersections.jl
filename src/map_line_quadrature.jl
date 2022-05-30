@@ -2,7 +2,9 @@ using ForwardDiff
 using LinearAlgebra
 using Revise
 
-function map_line_quadrature(ref_quadr, curve::Function, s_domain; ref_domain=(-1,1), normalization=false)
+function map_line_quadrature(ref_quadr, curve::Function, s_domain;
+    ref_domain=DEFAULT_REF_DOMAIN,
+    normalization=DEFAULT_NORMALIZATION)
 
     # Map the reference quadr points to s values
     ref_pts, ref_weights = ref_quadr
@@ -12,15 +14,7 @@ function map_line_quadrature(ref_quadr, curve::Function, s_domain; ref_domain=(-
 
     # Calculate the derivative and normal values at each of the s values
     dc_ds(s) = ForwardDiff.derivative(curve, s)
-    tangents = @. dc_ds(s_pts)
-
-
-    normals = [ [ tangents[i][2], -tangents[i][1] ] for i in 1:length(tangents) ]
-    if normalization == true
-        for i = 1:length(normals)
-            normals[i] = normals[i] / norm(normals[i])
-        end
-    end
+    normals = outward_normal.(dc_ds, s_pts, normalization)
 
     # Calculate the evaluation points and adjusted weights
     line_pts = @. curve(s_pts)
@@ -30,18 +24,17 @@ function map_line_quadrature(ref_quadr, curve::Function, s_domain; ref_domain=(-
 end
 
 
-function map_line_quadrature_consecutive(ref_quadr,
-    curve,
-    stop_points;
-    ref_domain_all=(-1,1),
-    normalization_all=false )
+function map_line_quadrature(ref_quadr, curve, stop_points::AbstractArray{Number};
+    ref_domain_all=DEFAULT_REF_DOMAIN,
+    normalization_all=DEFAULT_NORMALIZATION )
 
     pts_by_segment = []
     wts_by_segment = []
     normals_by_segment = []
     for i = 2:length(stop_points)
-        segment_pts, segment_wts, segment_normals = map_line_quadrature(ref_quadr, curve, (stop_points[i-1], stop_points[i]), 
-            ref_domain=ref_domain_all, normalization=normalization_all)
+        segment_pts, segment_wts, segment_normals = map_line_quadrature(ref_quadr, curve,
+            (stop_points[i-1], stop_points[i]), ref_domain=ref_domain_all,
+             normalization=normalization_all)
         push!(pts_by_segment, segment_pts)
         push!(wts_by_segment, segment_wts)
         push!(normals_by_segment, segment_normals)
@@ -52,11 +45,9 @@ end
 
 
 
-function map_line_quadrature_multiple(ref_quadr,
-    curve,
-    sub_bounds;
-    ref_domain_all=(-1,1),
-    normalization_all=false )
+function map_line_quadrature(ref_quadr, curve, sub_bounds::AbstractArray{AbstractArray};
+    ref_domain_all=DEFAULT_REF_DOMAIN,
+    normalization_all=DEFAULT_NORMALIZATION )
 
     pts_by_segment = []
     wts_by_segment = []

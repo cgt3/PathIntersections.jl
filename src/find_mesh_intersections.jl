@@ -1,5 +1,3 @@
-include("helper_functions.jl")
-
 # Function for finding multiple dim intersections against a single curve
 function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
     arc_tol=100*eps(eltype(coords[1])), corner_tol=100*eps(eltype(coords[1])))
@@ -24,7 +22,14 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
         ds = minimum([1/1000, dx_min / max_deriv_mag])
     end
 
-    # Start walking along the curve at s = 0
+    # Start walking along the curve at s = 0, watching for the curve's stop points
+    if typeof(curve) == PiecewiseCurve
+        stop_pts = curve.stop_pts
+    else
+        stop_pts = Float[-1]
+    end
+
+    i_pt = 1
     s = 0
     pt_curr = curve(s)
     
@@ -145,7 +150,6 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
             end # if intersection hasn't already been encountered
         end # d for-loop
         
-        # TODO: add adaptive stepping in s for curves with non-uniform arc-length per step?
         s = s_new
         s_new = s + get_ds(ds,s)
 

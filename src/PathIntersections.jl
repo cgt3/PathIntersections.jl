@@ -61,7 +61,14 @@ using LinearAlgebra
 using StructArrays
 
 const DEFAULT_DS = 0.0
+const DEFAULT_ARC_TOL = 1e-12
+const DEFAULT_CORNER_TOL = 1e-12
 const DEFAULT_CONTINUITY_TOL = 1e-12
+const DEFAULT_REF_DOMAIN = (-1,1)
+const DEFAULT_NORMALIZATION = false
+const DEFAULT_BINARY_REGIONS = false
+
+include("helper_functions.jl")
 
 # For defining geometeries
 export ConstFunction
@@ -77,12 +84,12 @@ include("PresetGeometries.jl")
 
 # For finding mesh-curve intersections
 export MeshIntersection
-mutable struct MeshIntersection
-    s       # The s-value where the intersection occurred
-    pt      # The approximate intersection point
-    dim     # Whether each dimension was involved in the intersection
-    I       # The indices of the closest lower mesh bound or the       
-            # boundaries involved in the intersection
+mutable struct MeshIntersection{T_param, T_point, T_participants, T_indices}
+    s::T_param              # The s-value where the intersection occurred
+    pt::T_point             # The approximate intersection point
+    dim::T_participants     # Whether each dimension was involved in the intersection
+    indices::T_indices            # The indices of the closest lower mesh bound or the       
+                            # boundaries involved in the intersection
 end
 
 export find_mesh_intersections
@@ -93,4 +100,9 @@ export map_line_quadrature
 export map_line_quadrature_consecutive
 export map_line_quadrature_multiple
 include("map_line_quadrature.jl")
+
+export define_regions
+export get_cutcell_nodes
+include("define_regions.jl")
+
 end # module

@@ -12,9 +12,19 @@ export CurveOrientation
 
 abstract type PresetGeometry end
 
-struct Line{T_start, T_end} <: Function
-    start_pt::T_start
-    end_pt::T_end
+struct Line{T_pt} <: Function
+    start_pt::T_pt
+    end_pt::T_pt
+end
+
+struct Rectangle{T_Lx, T_Ly, T_x0, T_y0, T_theta0, T_orientation} <: Function
+    Lx::T_Lx
+    Ly::T_Ly
+    x0::T_x0
+    y0::T_y0
+    theta0::T_theta0
+    orientation::T_orientation #CurveOrientation
+    func::T_function # should not be set by users; calculated by the constructor
 end
 
 struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
@@ -26,24 +36,43 @@ struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
     orientation::T_orientation #CurveOrientation
 end
 
-# Needed to default arguments
-function Ellipse(; Rx=1, Ry=1, x0=0, y0=0, theta0=0, orientation=1)
-    return Ellipse(Rx, Ry, x0, y0, theta0, orientation)
-end
-
-const Circle{T_R, T_x0, T_y0, T_theta0, T_orientation} = Ellipse{T_R, T_R, T_x0, T_y0, T_theta0, T_orientation}
-function Circle(; R=1, x0=0, y0=0, theta0=0, orientation=1)
-    return Ellipse(R, R, x0, y0, theta0, orientation)
-end
-
-struct Pacman{T_radius, T_first, T_second, T_x0, T_y0, T_orientation} <: Function
+struct Pacman{T_radius, T_first, T_second, T_x0, T_y0, T_orientation, T_function} <: Function
     R::T_radius
     first_jaw::T_first
     second_jaw::T_second
     x0::T_x0
     y0::T_y0
     orientation::T_orientation #CurveOrientation
-    func # should not be set by users; calculated by the constructor
+    func::T_function # should not be set by users; calculated by the constructor
+end
+
+# Needed to default arguments
+function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
+    quarter_pt = Lx / (2*(Lx + Ly))
+    stop_pts = (0, quarter_pt, 0.5, 1-quarter_pt, 1)
+    sub_bounds = [(0,1), (0,1), (0,1), (0,1)]
+    right  = Line(( Lx/2, -Ly/2), ( Lx/2,  Ly/2))
+    top    = Line(( Lx/2,  Ly/2), (-Lx/2,  Ly/2))
+    left   = Line((-Lx/2,  Ly/2), (-Lx/2, -Ly/2))
+    bottom = Line((-Lx/2, -Ly/2), ( Lx/2, -Ly/2))
+
+    func = PiecewiseCurve(stop_pts, [right, top, left, bottom], sub_bounds)
+    return Rectangle(Lx, Ly, x0, y0, theta0, orientation, func)
+end
+
+function Ellipse(; Rx=1, Ry=1, x0=0, y0=0, theta0=0, orientation=1)
+    return Ellipse(Rx, Ry, x0, y0, theta0, orientation)
+end
+
+# Simplified geometries
+const Square{T_L, T_x0, T_y0, T_theta0, T_orientation} = Rectangle{T_L, T_L, T_x0, T_y0, T_theta0, T_orientation}
+function Square(; L=1, x0=0, y0=0, theta0=0, orientation=1)
+    return Rectangle(Lx=L, Ly=L, x0=x0, y0=y0, theta0=theta0, orientation=orientation)
+end
+
+const Circle{T_R, T_x0, T_y0, T_theta0, T_orientation} = Ellipse{T_R, T_R, T_x0, T_y0, T_theta0, T_orientation}
+function Circle(; R=1, x0=0, y0=0, theta0=0, orientation=1)
+    return Ellipse(R, R, x0, y0, theta0, orientation)
 end
 
 # Constructor to enforce first/second_jaw in [0,2pi] for constructing func,
@@ -100,15 +129,22 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientatio
 end
 
 # Make the structs callable
+function (L::Line)(s)
+    return [ (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] ]
+end
+
+function (R::Rectangle)(s) # Also does squares
+    (x,y) = R.func(s)
+    r = norm((x,y))
+    theta = angle(x + y*im)
+    return [r*cos(theta + R.theta0) + R.x0, r*sin(theta + R.theta0) + R.y0]
+end
+
 function (E::Ellipse)(s) # Also does circles
     (x,y) = (E.Rx*cos(E.orientation*2*pi*s), E.Ry*sin(E.orientation*2*pi*s))
     r = norm((x,y))
     theta = angle(x + y*im)
-    return (r*cos(theta + E.theta0) + E.x0, r*sin(theta + E.theta0) + E.y0)
-end
-
-function (L::Line)(s)
-    return ( (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] ) 
+    return [r*cos(theta + E.theta0) + E.x0, r*sin(theta + E.theta0) + E.y0]
 end
 
 function (p::Pacman)(s)
