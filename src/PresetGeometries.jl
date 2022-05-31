@@ -50,12 +50,20 @@ function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
     quarter_pt = Lx / (2*(Lx + Ly))
     stop_pts = (0, quarter_pt, 0.5, 1-quarter_pt, 1)
     sub_bounds = [(0,1), (0,1), (0,1), (0,1)]
-    right  = Line(( Lx/2, -Ly/2), ( Lx/2,  Ly/2))
-    top    = Line(( Lx/2,  Ly/2), (-Lx/2,  Ly/2))
-    left   = Line((-Lx/2,  Ly/2), (-Lx/2, -Ly/2))
-    bottom = Line((-Lx/2, -Ly/2), ( Lx/2, -Ly/2))
 
-    func = PiecewiseCurve(stop_pts, [right, top, left, bottom], sub_bounds)
+    if orientation == 1
+        right  = Line(( Lx/2, -Ly/2), ( Lx/2,  Ly/2))
+        top    = Line(( Lx/2,  Ly/2), (-Lx/2,  Ly/2))
+        left   = Line((-Lx/2,  Ly/2), (-Lx/2, -Ly/2))
+        bottom = Line((-Lx/2, -Ly/2), ( Lx/2, -Ly/2))
+        func = PiecewiseCurve(stop_pts, [right, top, left, bottom], sub_bounds)
+    else
+        bottom = Line(( Lx/2, -Ly/2), (-Lx/2, -Ly/2))
+        left   = Line((-Lx/2, -Ly/2), (-Lx/2,  Ly/2))
+        top    = Line((-Lx/2,  Ly/2), ( Lx/2,  Ly/2))
+        right  = Line(( Lx/2,  Ly/2), ( Lx/2, -Ly/2))
+        func = PiecewiseCurve(stop_pts, [bottom, left, top, right], sub_bounds)
+    end
     return Rectangle(Lx, Ly, x0, y0, theta0, orientation, stop_pts, func)
 end
 

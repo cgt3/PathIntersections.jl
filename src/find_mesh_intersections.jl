@@ -153,10 +153,11 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
         
         # If the most recently discovered intersection was a stop point,
         # increment the stop point index
-        if i_stop_pts > 0 && i_stop_pts < length(stop_pts) && intersectionIndex > 0 && abs(intersections[intersectionIndex].s - stop_pts[i_stop_pts]) <= s_tol 
+        if i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && intersectionIndex > 0 && abs(intersections[intersectionIndex].s - stop_pts[i_stop_pts]) <= s_tol 
             i_stop_pts += 1
-        # If the next stop point is between the current point and the next point, add it now
-        elseif i_stop_pts > 0 && i_stop_pts < length(stop_pts) && s + ds > stop_pts[i_stop_pts]
+        # If the next stop point is between the current point and the next point or is the end point, add it now
+        elseif i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && 
+            ( s + ds > stop_pts[i_stop_pts] || (s == 1 && stop_pts[i_stop_pts] == 1) )
             push!(intersections, MeshIntersection(s, curve(stop_pts[i_stop_pts]), false*dim, copy(indices_lb))) 
             intersectionIndex += 1
             i_stop_pts += 1

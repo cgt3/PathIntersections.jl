@@ -72,9 +72,9 @@ function secant_single_dim(intercept, targetDim, curve, s_lb, s_ub, arc_tol)
 end
 
 function outward_normal(dC_ds, s; normalization=false)
-    tangents = dc_ds(s)
+    tangents = dC_ds(s)
     # Note: need array if normalization is selected (tuples are immutable)
-    normals = [ tangents[i][2], -tangents[i][1] ] 
+    normals = [ tangents[2], -tangents[1] ] 
     if normalization == true
         for i = 1:length(normals)
             normals[i] = normals[i] / norm(normals[i])
