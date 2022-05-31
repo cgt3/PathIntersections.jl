@@ -7,24 +7,21 @@ import ..PiecewiseCurve
 # Note: these are callable structs
 export Line, Ellipse, Circle, Pacman
 
-export CurveOrientation
-@enum CurveOrientation pos=1 neg=-1
-
-abstract type PresetGeometry end
-
 struct Line{T_pt} <: Function
     start_pt::T_pt
     end_pt::T_pt
 end
 
-struct Rectangle{T_Lx, T_Ly, T_x0, T_y0, T_theta0, T_orientation} <: Function
+struct Rectangle{T_Lx, T_Ly, T_x0, T_y0, T_theta0, T_orientation, T_pts, T_function} <: Function
     Lx::T_Lx
     Ly::T_Ly
     x0::T_x0
     y0::T_y0
     theta0::T_theta0
     orientation::T_orientation #CurveOrientation
-    func::T_function # should not be set by users; calculated by the constructor
+    # These should not be set by users; calculated by the constructor
+    stop_pts::T_pts
+    func::T_function
 end
 
 struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
@@ -33,17 +30,19 @@ struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
     x0::T_x0
     y0::T_y0
     theta0::T_theta0
-    orientation::T_orientation #CurveOrientation
+    orientation::T_orientation
 end
 
-struct Pacman{T_radius, T_first, T_second, T_x0, T_y0, T_orientation, T_function} <: Function
+struct Pacman{T_radius, T_first, T_second, T_x0, T_y0, T_orientation, T_pts, T_function} <: Function
     R::T_radius
     first_jaw::T_first
     second_jaw::T_second
     x0::T_x0
     y0::T_y0
-    orientation::T_orientation #CurveOrientation
-    func::T_function # should not be set by users; calculated by the constructor
+    orientation::T_orientation
+    # These should not be set by users; calculated by the constructor
+    stop_pts::T_pts
+    func::T_function 
 end
 
 # Needed to default arguments
@@ -57,7 +56,7 @@ function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
     bottom = Line((-Lx/2, -Ly/2), ( Lx/2, -Ly/2))
 
     func = PiecewiseCurve(stop_pts, [right, top, left, bottom], sub_bounds)
-    return Rectangle(Lx, Ly, x0, y0, theta0, orientation, func)
+    return Rectangle(Lx, Ly, x0, y0, theta0, orientation, stop_pts, func)
 end
 
 function Ellipse(; Rx=1, Ry=1, x0=0, y0=0, theta0=0, orientation=1)
@@ -125,7 +124,7 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientatio
     s_bounds = ( (0,1), (orientation*first_jaw_bounded/(2*pi), (orientation*first_jaw_bounded + abs(jaw_diff))/(2*pi)), (0,1) )
     
     func = PiecewiseCurve(stop_pts, subcurves, s_bounds)
-    return Pacman(R, first_jaw_bounded, second_jaw_bounded, x0, y0, orientation, func)
+    return Pacman(R, first_jaw_bounded, second_jaw_bounded, x0, y0, orientation, stop_pts, func)
 end
 
 # Make the structs callable

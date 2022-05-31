@@ -2,6 +2,7 @@
 function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
     arc_tol=100*eps(eltype(coords[1])), corner_tol=100*eps(eltype(coords[1])))
 
+    s_tol = arc_tol
     numDim = length(coords)
     # Default step size to something (approximately) smaller than the smallest mesh size
     if ds == DEFAULT_DS
@@ -23,13 +24,13 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
     end
 
     # Start walking along the curve at s = 0, watching for the curve's stop points
-    if typeof(curve) == PiecewiseCurve
+    if :stop_pts in fieldnames(typeof(curve))
         stop_pts = curve.stop_pts
+        i_stop_pts = 1
     else
-        stop_pts = Float[-1]
+        i_stop_pts = -1
     end
 
-    i_pt = 1
     s = 0
     pt_curr = curve(s)
     
@@ -150,6 +151,16 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
             end # if intersection hasn't already been encountered
         end # d for-loop
         
+        # If the most recently discovered intersection was a stop point,
+        # increment the stop point index
+        if i_stop_pts > 0 && i_stop_pts < length(stop_pts) && intersectionIndex > 0 && abs(intersections[intersectionIndex].s - stop_pts[i_stop_pts]) <= s_tol 
+            i_stop_pts += 1
+        # If the next stop point is between the current point and the next point, add it now
+        elseif i_stop_pts > 0 && i_stop_pts < length(stop_pts) && s + ds > stop_pts[i_stop_pts]
+            push!(intersections, MeshIntersection(s, curve(stop_pts[i_stop_pts]), false*dim, copy(indices_lb))) 
+            intersectionIndex += 1
+            i_stop_pts += 1
+        end
         s = s_new
         s_new = s + get_ds(ds,s)
 

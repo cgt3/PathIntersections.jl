@@ -1,8 +1,6 @@
 using ForwardDiff
 using SparseArrays
 
-using PiecewiseCurve # Need?
-
 function get_element_index(I_entry, I_next, tan_entry)
     diff = I_entry .- I_next
     abs_diff = abs.(diff)
@@ -52,7 +50,7 @@ function get_face_index(point, I_element)
 end
 
 function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
-    import PresetGeometries.Line
+    Line = PresetGeometries.Line
 
     nx = mesh_coords[1]
     ny = mesh_coords[2]
@@ -62,7 +60,6 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
     cutcells = PiecewiseCurve[]
 
     num_curves = length(curves)
-    num_regions = num_curves + 1
     
     # For incrementing the element index to corner/face indices
     # i.e. corner_index = element_index + pt_incr[face index]
