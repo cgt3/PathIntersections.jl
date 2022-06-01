@@ -193,8 +193,13 @@ function find_mesh_intersections(coords, curve::Function,
 end
 
 
-function find_mesh_intersections(coords, curves::Union{Array, Tuple}, ds=DEFAULT_DS, 
-    arc_tol=100*eps(eltype(coords[1])), corner_tol=100*eps(eltype(coords[1])))
+function find_mesh_intersections(coords, curves::Union{Array, Tuple},
+    ds=DEFAULT_DS, 
+    arc_tol=100*eps(eltype(coords[1])),
+    corner_tol=100*eps(eltype(coords[1])),
+    is_closed = true,
+    closure_tol=1e-12)
+
     numCurves = length(curves)
     intersectionsByCurve = []
 
@@ -214,12 +219,12 @@ function find_mesh_intersections(coords, curves::Union{Array, Tuple}, ds=DEFAULT
     # Process each curve
     if typeof(ds) <: Function
         for c = 1:numCurves
-            intersections = find_mesh_intersections(coords, curves[c], ds, arc_tol[c], corner_tol[c])
+            intersections = find_mesh_intersections(coords, curves[c], ds, arc_tol[c], corner_tol[c], is_closed, closure_tol)
             push!(intersectionsByCurve, intersections)
         end
     else
         for c = 1:numCurves
-            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c])
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c], is_closed, closure_tol)
             push!(intersectionsByCurve, intersections)
         end
     end

@@ -207,9 +207,8 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                 i_start += 1
             end
             
-            # Find where the interior ends
             i_end = i_max
-            while i_end-1 < i_min && !(region_mask[i_end,j] == true && region_mask[i_end-1,j] == false) 
+            while i_end-1 > i_min && !(region_mask[i_end,j] == true && region_mask[i_end-1,j] == false) 
                 i_end -= 1
             end
 
@@ -245,7 +244,7 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
     closure_tol=1e-12 )
 
     # 1) Get mesh intersections and curve stop points
-    stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol)
+    stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol, true, closure_tol)
 
     # 2) Calculate cutcells
     regions_by_element, cutcell_indices, cutcells = define_regions(mesh_coords, curves,

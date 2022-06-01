@@ -9,8 +9,8 @@ using PathIntersections
 
 ## Curve parameters ------------------------------------------------------------------
 pacman = PresetGeometries.Pacman(R=0.85)
-rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6, x0=0, y0=0)
-ellipse = PresetGeometries.Ellipse(Rx=0.25, Ry=0.15, x0=0.5, y0=-0.5, theta0=pi/6)
+rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6, x0=-0.5, y0=0.5)
+ellipse = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=0., y0=-0., theta0=pi/6)
 
 ## Intersection search parameters ----------------------------------------------------
 # Mesh parameters
@@ -27,7 +27,7 @@ ds = 1/100
 ref_pts, ref_wts = legendre(5) # Legendre-Gauss quadrature
 ref_quad = (ref_pts, ref_wts)
 # intersections = find_mesh_intersections(coords, curve, ds, arc_tol, corner_tol)
-regions, cutcell_i, cutcell_quad, cutcells = get_cutcell_nodes(coords, [pacman], ref_quad)
+regions, cutcell_i, cutcell_quad, cutcells = get_cutcell_nodes(coords, [ellipse], ref_quad)
 
 
 # # Plot the mesh
