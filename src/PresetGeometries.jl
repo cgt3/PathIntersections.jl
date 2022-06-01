@@ -7,9 +7,9 @@ import ..PiecewiseCurve
 # Note: these are callable structs
 export Line, Ellipse, Circle, Pacman
 
-struct Line{T_pt} <: Function
-    start_pt::T_pt
-    end_pt::T_pt
+struct Line{T_pt1, T_pt2} <: Function
+    start_pt::T_pt1
+    end_pt::T_pt2
 end
 
 struct Rectangle{T_Lx, T_Ly, T_x0, T_y0, T_theta0, T_orientation, T_pts, T_function} <: Function
