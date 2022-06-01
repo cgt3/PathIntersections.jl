@@ -47,23 +47,28 @@ end
 
 # Needed to default arguments
 function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
-    quarter_pt = Lx / (2*(Lx + Ly))
-    stop_pts = (0, quarter_pt, 0.5, 1-quarter_pt, 1)
-    sub_bounds = [(0,1), (0,1), (0,1), (0,1)]
 
     if orientation == 1
         right  = Line(( Lx/2, -Ly/2), ( Lx/2,  Ly/2))
         top    = Line(( Lx/2,  Ly/2), (-Lx/2,  Ly/2))
         left   = Line((-Lx/2,  Ly/2), (-Lx/2, -Ly/2))
         bottom = Line((-Lx/2, -Ly/2), ( Lx/2, -Ly/2))
-        func = PiecewiseCurve(stop_pts, [right, top, left, bottom], sub_bounds)
+        edges = [right, top, left, bottom]
+
+        first_corner = Ly / (2*(Lx + Ly))
     else
         bottom = Line(( Lx/2, -Ly/2), (-Lx/2, -Ly/2))
         left   = Line((-Lx/2, -Ly/2), (-Lx/2,  Ly/2))
         top    = Line((-Lx/2,  Ly/2), ( Lx/2,  Ly/2))
         right  = Line(( Lx/2,  Ly/2), ( Lx/2, -Ly/2))
-        func = PiecewiseCurve(stop_pts, [bottom, left, top, right], sub_bounds)
+        edges=[bottom, left, top, right]
+
+        first_corner = Lx / (2*(Lx + Ly))
     end
+    stop_pts = (0, first_corner, 0.5, 0.5+first_corner, 1)
+    sub_bounds = [(0,1), (0,1), (0,1), (0,1)]
+    func = PiecewiseCurve(stop_pts, edges, sub_bounds)
+
     return Rectangle(Lx, Ly, x0, y0, theta0, orientation, stop_pts, func)
 end
 

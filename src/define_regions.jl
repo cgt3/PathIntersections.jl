@@ -1,13 +1,14 @@
 using ForwardDiff
 using SparseArrays
 
-function get_element_index(I_entry, I_next, tan_entry; tol=1e-12)
-    diff = I_entry .- I_next
+# Note: this function only works properly for points on the boundaries
+function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
+    diff = entry_pt.indices .- exit_pt.indices
     abs_diff = abs.(diff)
 
     # If the indices are the same, return their common index
-    if Tuple(I_entry) == Tuple(I_next)
-        return Tuple(I_entry)
+    if Tuple(entry_pt.indices) == Tuple(exit_pt.indices)
+        return Tuple(entry_pt.indices)
     end
 
     # If the indices are not on the same element return a invalid index
@@ -16,19 +17,29 @@ function get_element_index(I_entry, I_next, tan_entry; tol=1e-12)
             return (-1,-1)
         end
     end
-
     i_element, j_element = 0, 0
     if sum(abs_diff) == 2
-        i_element = minimum([I_entry[1], I_next[1]])
-        j_element = minimum([I_entry[2], I_next[2]])
+        i_element = minimum([entry_pt.indices[1], exit_pt.indices[1]])
+        j_element = minimum([entry_pt.indices[2], exit_pt.indices[2]])
     elseif abs_diff[1] == 1
-        i_element = minimum([I_entry[1], I_next[1]])
-        j_element = I_entry[2] + (tan_entry[2] >= -tol ? 0 : -1)
+        i_element = minimum([entry_pt.indices[1], exit_pt.indices[1]])
+        if entry_pt.pt[1] != mesh_coords[1][entry_pt.indices[1]] ||
+           exit_pt.pt[1]  != mesh_coords[1][entry_pt.indices[1]] ||
+           tan_entry[1] > 0
+            j_element = entry_pt.indices[2]
+        else
+            j_element = entry_pt.indices[2] - 1
+        end
     elseif abs_diff[2] == 1
-        i_element = I_entry[1] + (tan_entry[1] >= -tol ? 0 : -1)
-        j_element = minimum([I_entry[2], I_next[2]])
+        if entry_pt.pt[2] != mesh_coords[2][entry_pt.indices[2]] ||
+           exit_pt.pt[2]  != mesh_coords[2][entry_pt.indices[2]] ||
+           tan_entry[2] > 0
+            i_element = entry_pt.indices[1]
+        else
+            i_element = entry_pt.indices[1] - 1
+        end
+        j_element = minimum([entry_pt.indices[2], exit_pt.indices[2]])
     end
-    
     return (i_element, j_element)
 end
 
@@ -55,7 +66,7 @@ function get_face_index(point, I_element)
     return i_face, is_corner
 end
 
-function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
+function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edge_tol=1e-12)
     Line = PresetGeometries.Line
 
     nx = length(mesh_coords[1])
@@ -85,7 +96,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
         # For filling in the curve's region later
         i_min, i_max = nx, 1
         j_min, j_max = ny, 1
-        region_mask = zeros(Bool, nx, ny)
+        region_mask = zeros(Bool, nx-1, ny-1)
 
         # For each stop point on that curve
         i_prev = 0
@@ -99,50 +110,57 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
 
             cutcell_curves = Function[]
             cutcell_sub_bounds = Tuple[] # TODO: can make type stable?
-            sub_bounds = [entry_pt.s, 0.0]
+            sub_bounds = [1.0*entry_pt.s, entry_pt.s]
 
             # 0) Make sure we have not left the domain
-            if (entry_pt.indices[1] == 1 && tan_entry[1] < 0) || # x0
-                (entry_pt.indices[1] == nx && tan_entry[1] > 0) || # xN
-                (entry_pt.indices[2] == 1  && tan_entry[2] < 0) || # y0
-                (entry_pt.indices[2] == ny && tan_entry[2] > 0)  # yN
+            if  (abs(entry_pt.pt[1] - mesh_coords[1][1] ) < edge_tol && tan_entry[1] < 0) || # x0
+                (abs(entry_pt.pt[1] - mesh_coords[1][nx]) < edge_tol && tan_entry[1] > 0) || # xN
+                (abs(entry_pt.pt[2] - mesh_coords[2][1] ) < edge_tol && tan_entry[2] < 0) || # y0
+                (abs(entry_pt.pt[2] - mesh_coords[2][ny]) < edge_tol && tan_entry[2] > 0)  # yN
                 i += 1 # move to the next point if we've left the domain
             # Make sure we don't start inside an element
             elseif sum(entry_pt.dim) == 0
                 i += 1
             else # We're inside an element
-                # 1) Identify the element we're on based on the entry point and the next stop point
+                # 1) Find the exit point for this element and add any interior stop points
+                num_subcurves = 0
+                j = i
+                j_next = j < num_stop_pts ? j+1 : 2
+                found_exit = false
+                while found_exit == false
+                    # If we wrap all the way around the curve make sure to use the proper sub-bounds
+                    if stop_pts[c][j_next].s < stop_pts[c][j].s #j_next == num_stop_pts 
+                        sub_bounds[1] = 0 - (1 - stop_pts[c][j].s)
+                    else
+                        sub_bounds[1] = sub_bounds[2]
+                    end
+                    sub_bounds[2] = stop_pts[c][j_next].s
+                    push!(cutcell_curves, curves[c])
+                    push!(cutcell_sub_bounds, Tuple(sub_bounds))
+                    num_subcurves += 1
+
+                    if sum(stop_pts[c][j_next].dim) != 0
+                        found_exit = true
+                    end
+                    j = j_next
+                    j_next = j < num_stop_pts ? j+1 : 2
+                end
+                i_exit = j
+                exit_pt = stop_pts[c][i_exit]
+                
+                # 2) Identify the element we're on based on the entry and exit point
                 #    and mark said element as cut.
-                I_element = get_element_index(entry_pt.indices, stop_pts[c][i+1].indices, tan_entry)
+                I_element = get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords)
                 regions_by_element[I_element...] = region
                 region_mask[I_element...] = true
                 i_min, i_max = minimum([I_element[1], i_min]), maximum([I_element[1], i_max])
                 j_min, j_max = minimum([I_element[2], j_min]), maximum([I_element[2], j_max])
 
-                # 2) Find the exit point for this element and add any interior stop points
-                num_subcurves = 0
-                j = i
-                j_next = j+1 <= num_stop_pts ? j+1 : 2
-                while ( j == i || sum(stop_pts[c][j].dim) == 0 ) && I_element == get_element_index(entry_pt.indices, stop_pts[c][j_next].indices, tan_entry)
-                    j = j_next
-                    sub_bounds[2] = stop_pts[c][j].s
-                    push!(cutcell_curves, curves[c])
-                    push!(cutcell_sub_bounds, Tuple(sub_bounds))
-                    if j == num_stop_pts
-                        sub_bounds[1] = stop_pts[c][1].s
-                    else
-                        sub_bounds[1] = sub_bounds[2]
-                    end
-                    num_subcurves += 1
-                    j_next = j+1 <= num_stop_pts ? j+1 : 2
-                end
-                i_exit = j
-                exit_pt = stop_pts[c][i_exit]
 
                 # 3) Determine the faces the entry and exit points are on
                 f_entry, _ = get_face_index(entry_pt, I_element)
                 f_exit, exit_is_corner = get_face_index(exit_pt, I_element)
-
+                
                 f_entry -= 1 # don't add the Cartesian node on the entry pt's face
                 if exit_is_corner
                     f_exit += 1
@@ -161,7 +179,6 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
                     push!(cutcell_curves, Line(Tuple(curr_pt), Tuple(next_pt)))
                     push!(cutcell_sub_bounds, (0,1))
                     num_subcurves += 1
-                    
                     curr_pt = next_pt
                 end
                 # 5) Close the curve
@@ -186,13 +203,13 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
         for j = j_min:j_max
             # Find where the interior starts
             i_start = i_min
-            while i+1 < i_max && !(region_mask[i,j] == true && region_mask[i+1,j] == false) 
+            while i_start+1 < i_max && !(region_mask[i_start,j] == true && region_mask[i_start+1,j] == false) 
                 i_start += 1
             end
             
             # Find where the interior ends
             i_end = i_max
-            while i-1 < i_min && !(region_mask[i,j] == true && region_mask[i-1,j] == false) 
+            while i_end-1 < i_min && !(region_mask[i_end,j] == true && region_mask[i_end-1,j] == false) 
                 i_end -= 1
             end
 
@@ -209,9 +226,9 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false)
         #     region_mask = !region_mask
         # end
 
-        # # Add the interior to the region map, but only overwrite zeros
-        # @. interior = (regions_by_element == 0) && region_mask
-        # @. regions_by_element[interior] =  -region
+        # Add the interior to the region map, but only overwrite zeros
+        interior = @. (regions_by_element == 0) && region_mask
+        regions_by_element[interior] .= -region
 
     end # for: c in 1:num_curves
 
@@ -224,7 +241,8 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
     corner_tol=DEFAULT_CORNER_TOL,
     binary_regions=DEFAULT_BINARY_REGIONS,
     ref_domain=DEFAULT_REF_DOMAIN,
-    normalization=DEFAULT_NORMALIZATION )
+    normalization=DEFAULT_NORMALIZATION,
+    closure_tol=1e-12 )
 
     # 1) Get mesh intersections and curve stop points
     stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol)

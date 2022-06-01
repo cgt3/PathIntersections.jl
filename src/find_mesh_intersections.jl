@@ -1,8 +1,12 @@
 # Function for finding multiple dim intersections against a single curve
-function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
-    arc_tol=100*eps(eltype(coords[1])), corner_tol=100*eps(eltype(coords[1])))
+function find_mesh_intersections(coords, curve::Function,
+     ds=DEFAULT_DS,
+    arc_tol=100*eps(eltype(coords[1])),
+    corner_tol=100*eps(eltype(coords[1])),
+    closed_list=true,
+    closure_tol=1e-12)
 
-    s_tol = arc_tol
+    s_tol = 1e-12
     numDim = length(coords)
     # Default step size to something (approximately) smaller than the smallest mesh size
     if ds == DEFAULT_DS
@@ -158,7 +162,7 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
         # If the next stop point is between the current point and the next point or is the end point, add it now
         elseif i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && 
             ( s + ds > stop_pts[i_stop_pts] || (s == 1 && stop_pts[i_stop_pts] == 1) )
-            push!(intersections, MeshIntersection(s, curve(stop_pts[i_stop_pts]), false*dim, copy(indices_lb))) 
+            push!(intersections, MeshIntersection(stop_pts[i_stop_pts], curve(stop_pts[i_stop_pts]), false*dim, copy(indices_lb))) 
             intersectionIndex += 1
             i_stop_pts += 1
         end
@@ -182,6 +186,9 @@ function find_mesh_intersections(coords, curve::Function, ds=DEFAULT_DS,
         end
     end # s while-loop
 
+    if closed_list == true && sum(intersections[1].pt - intersections[end].pt .> closure_tol) != 0
+        push!(intersections, intersections[1])
+    end
     return intersections
 end
 
