@@ -49,25 +49,27 @@ end
 # pts = @. ellipse(s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
-# # Plot points along a specific cutcell
+# Plot points along a specific cutcell
 # s = LinRange(0, 1, 50)
-# i = 3
+# i = 1
 # pts = @. cutcells[i](s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
-# pts = @. cutcells[i+4](s)
+# pts = @. cutcells[16](s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
 
-# # Plot the quadrature nodes on a single cell
-# i_cell
-# for i_face in 1:length(cutcell_quad[i_cell][1])
-#     scatter!(getindex.(cutcell_quad[i_cell][1][i_face], 1), getindex.(cutcell_quad[i_cell][1][i_face], 2))
+# Plot the quadrature nodes on a single cell
+# i_cell = 3
+# for i_cell = 9:16
+# for i_face in 1:length(cutcell_quad[:pts][i_cell])
+#     scatter!(getindex.(cutcell_quad[:pts][i_cell][i_face], 1), getindex.(cutcell_quad[:pts][i_cell][i_face], 2))
+# end
 # end
 
 # Plot the quadrature nodes on all cutcells
-for cell_quad in cutcell_quad
-    for face in 1:length(cell_quad[1])
-        scatter!(getindex.(cell_quad[1][face], 1), getindex.(cell_quad[1][face], 2))
+for cell_pts in cutcell_quad[:pts]
+    for face in 1:length(cell_pts)
+        scatter!(getindex.(cell_pts[face], 1), getindex.(cell_pts[face], 2))
     end
 end
 

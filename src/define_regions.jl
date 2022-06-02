@@ -251,12 +251,17 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
         stop_pts, binary_regions=binary_regions)
 
     # 3) Compute quadrature on the cutcell boundaries
-    cutcell_quadratures = Tuple[]
+    all_pts = Vector{Vector{Vector{Float64}}}[]
+    all_wts = Vector{Vector{Float64}}[]
+    all_n =   Vector{Vector{Vector{Float64}}}[]
     for c = 1:length(cutcells)
-        cutcell_quad = map_line_quadrature(ref_quad, cutcells[c], cutcells[c].stop_pts,
+        cell_pts, cell_wts, cell_n = map_line_quadrature(ref_quad, cutcells[c], cutcells[c].stop_pts,
             ref_domain=ref_domain, normalization=normalization )
-        push!(cutcell_quadratures, cutcell_quad)
+        push!(all_pts, cell_pts)
+        push!(all_wts, cell_wts)
+        push!(all_n, cell_n)
     end
+    all_quadratures = Dict(:pts => all_pts, :wts => all_wts, :n => all_n)
     
-    return regions_by_element, cutcell_indices, cutcell_quadratures, cutcells
+    return regions_by_element, cutcell_indices, all_quadratures, cutcells
 end
