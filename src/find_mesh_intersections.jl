@@ -42,7 +42,6 @@ function find_mesh_intersections(coords, curve::Function,
     indices_ub = ones(Int, numDim)
     indices_lb = ones(Int, numDim)
     for d = 1:numDim
-        # TODO: can change to binary search since the coord vectors are sorted
         while indices_ub[d] < length(coords[d]) && coords[d][indices_ub[d]] < pt_curr[d]
             indices_ub[d] += 1 
         end
@@ -60,7 +59,7 @@ function find_mesh_intersections(coords, curve::Function,
 
     s_new = s
     pt_new = pt_curr
-    while s <= 1
+    while s < 1
         # Check if we are currently in the domain or crossing into or out of it
         curr_isInsideDomain = true
         new_isInsideDomain = true
@@ -105,10 +104,12 @@ function find_mesh_intersections(coords, curve::Function,
                     # The new point crossed the lower bound
                     elseif pt_new[d] < coords[d][indices_lb[d]]
                         s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol)
+                        #println("Intersection found (1): d = $d, (s, s_new) = $s, $s_new, s_intercept = $s_intercept")
                         intersectionOccurred = true
                     # The new point crossed the upper bound
                     elseif pt_new[d] > coords[d][indices_ub[d]]
                         s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arc_tol)
+                        #println("Intersection found (2): d = $d, (s, s_new) = $s, $s_new, s_intercept = $s_intercept")
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
                     end # Otherwise, if no boundaries are crossed keep walking
@@ -145,6 +146,7 @@ function find_mesh_intersections(coords, curve::Function,
                             # the bounds need to be updated with the next point and not the
                             # current one
                             if wasOnBoundary == false && dim[i] == true # this dim participated in the compound intersection
+                                # should be pt_intercept?
                                 tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
                             end
                         end # Update bounds for-loop
@@ -170,7 +172,7 @@ function find_mesh_intersections(coords, curve::Function,
         s_new = s + get_ds(ds,s)
 
         # Make sure to test the endpoint
-        if s_new > 1 && s != 1
+        if s_new > 1 && s < 1
             s_new = 1
         end
         
@@ -201,7 +203,7 @@ function find_mesh_intersections(coords, curves::Union{Array, Tuple},
     closure_tol=1e-12)
 
     numCurves = length(curves)
-    intersectionsByCurve = []
+    intersectionsByCurve = Vector{MeshIntersection}[]
 
     # Allow scalar arguments without changing functionality
     if typeof(ds) <:Real

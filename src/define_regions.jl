@@ -121,7 +121,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
             # Make sure we don't start inside an element
             elseif sum(entry_pt.dim) == 0
                 i += 1
-            else # We're inside an element
+            else # We're on the boundary of an element
                 # 1) Find the exit point for this element and add any interior stop points
                 num_subcurves = 0
                 j = i
