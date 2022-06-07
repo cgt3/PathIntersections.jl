@@ -139,6 +139,8 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                     push!(cutcell_sub_bounds, Tuple(sub_bounds))
                     num_subcurves += 1
 
+                    # WARNING: If tunneling is to be allowed this condition won't
+                    # suffice
                     if sum(stop_pts[c][j_next].dim) != 0
                         found_exit = true
                     end
@@ -151,6 +153,9 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                 # 2) Identify the element we're on based on the entry and exit point
                 #    and mark said element as cut.
                 I_element = get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords)
+                if regions_by_element[I_element...] != 0
+                    @warn "define_regions: tunneling has occured; element $I_element has been assigned more than one cutcell"
+                end
                 regions_by_element[I_element...] = region
                 region_mask[I_element...] = true
                 i_min, i_max = minimum([I_element[1], i_min]), maximum([I_element[1], i_max])
@@ -228,6 +233,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
         # Add the interior to the region map, but only overwrite zeros
         interior = @. (regions_by_element == 0) && region_mask
         regions_by_element[interior] .= -region
+        regions_by_element
 
     end # for: c in 1:num_curves
 
@@ -241,7 +247,8 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
     binary_regions=DEFAULT_BINARY_REGIONS,
     ref_domain=DEFAULT_REF_DOMAIN,
     normalization=DEFAULT_NORMALIZATION,
-    closure_tol=1e-12 )
+    closure_tol=1e-12,
+    normals_wrt_cell=true )
 
     # 1) Get mesh intersections and curve stop points
     stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol, true, closure_tol)
@@ -257,6 +264,10 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
     for c = 1:length(cutcells)
         cell_pts, cell_wts, cell_n = map_line_quadrature(ref_quad, cutcells[c], cutcells[c].stop_pts,
             ref_domain=ref_domain, normalization=normalization )
+
+        if normals_wrt_cell == true
+            cell_n = @. -cell_n
+        end
         push!(all_pts, cell_pts)
         push!(all_wts, cell_wts)
         push!(all_n, cell_n)
