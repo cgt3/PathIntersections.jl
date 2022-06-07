@@ -72,14 +72,48 @@ function secant_single_dim(intercept, targetDim, curve, s_lb, s_ub, arc_tol)
 end
 
 function outward_normal(dC_ds, s; normalization=false)
-    tangents = dC_ds(s)
+    tangent = dC_ds(s)
     # Note: need array if normalization is selected (tuples are immutable)
-    normals = [ tangents[2], -tangents[1] ] 
+    normal = [ tangent[2], -tangent[1] ] 
     if normalization == true
-        for i = 1:length(normals)
-            normals[i] = normals[i] / norm(normals[i])
-        end
+        return normal ./ norm(normal)
     end
 
-    return normals
+    return normal
+end
+
+function insert_sorted!(intersections, new_pt, exclude_duplicates=false, duplicate_warning=true)
+    num_pts = length(intersections)
+    i = num_pts
+    if num_pts == 0
+        push!(intersections, new_pt)
+        return
+    end
+
+    if exclude_duplicates == false
+        if intersections[i].s <= new_pt.s
+            push!(intersections, new_pt)
+        else
+            push!(intersections, intersections[i])
+            while i > 1 && new_pt.s < intersections[i].s
+                intersections[i] = intersections[i-1]
+                i -= 1
+            end
+            intersections[i] = new_pt
+        end
+    else # exclude_duplicate == true
+        # check if this point already exists
+        while i >= 1 && new_pt.s < intersections[i].s 
+            i -= 1
+        end
+        if intersections[i].s == new_pt.s
+            return
+        else
+            push!(intersections, intersections[num_curves])
+            for j = num_curves:-1:i+1
+                intersections[j] = intersections[j-1]
+            end
+            intersections[i] = new_pt
+        end
+    end
 end
