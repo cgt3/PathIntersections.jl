@@ -6,7 +6,6 @@ function find_mesh_intersections(coords, curve::Function,
     closed_list=true,
     closure_tol=1e-12)
 
-    s_tol = 1e-12
     numDim = length(coords)
     # Default step size to something (approximately) smaller than the smallest mesh size
     if ds == DEFAULT_DS
@@ -54,12 +53,13 @@ function find_mesh_intersections(coords, curve::Function,
 
     # Walk along the curve, sensing for intersections in each dim
     intersections = MeshIntersection[]
-    intersectionIndex = 0
-    dim = Array{Bool,1}(undef, numDim)
+    dim = zeros(Bool, numDim)
 
     s_new = s
     pt_new = pt_curr
     while s < 1
+        intersections_by_itr = MeshIntersection[]
+
         # Check if we are currently in the domain or crossing into or out of it
         curr_isInsideDomain = true
         new_isInsideDomain = true
@@ -74,6 +74,7 @@ function find_mesh_intersections(coords, curve::Function,
         isInsideDomain = curr_isInsideDomain | new_isInsideDomain
 
         compoundIntersection = false
+        dim_prev = zeros(Bool, numDim) # The dimensions of the last intersection found
         wasOnBoundary = false
         for d = 1:numDim
             # WARNING: lines of intersection will be counted as a series of intersections
@@ -81,7 +82,7 @@ function find_mesh_intersections(coords, curve::Function,
 
             # If the last intersection did not involve this dimension, check it for an
             # intersection
-            if compoundIntersection == false || intersections[intersectionIndex].dim[d] == false
+            if compoundIntersection == false || dim_prev[d] == false
                 dim[d] = false # Since using undef doesn't guarantee dim is initialized to false
                 intersectionOccurred = false
                 wasOnBoundary = false
@@ -104,12 +105,10 @@ function find_mesh_intersections(coords, curve::Function,
                     # The new point crossed the lower bound
                     elseif pt_new[d] < coords[d][indices_lb[d]]
                         s_intercept, pt_intercept = secant_single_dim(coords[d][indices_lb[d]], d, curve, s_new, s, arc_tol)
-                        #println("Intersection found (1): d = $d, (s, s_new) = $s, $s_new, s_intercept = $s_intercept")
                         intersectionOccurred = true
                     # The new point crossed the upper bound
                     elseif pt_new[d] > coords[d][indices_ub[d]]
                         s_intercept, pt_intercept = secant_single_dim(coords[d][indices_ub[d]], d, curve, s, s_new, arc_tol)
-                        #println("Intersection found (2): d = $d, (s, s_new) = $s, $s_new, s_intercept = $s_intercept")
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
                     end # Otherwise, if no boundaries are crossed keep walking
@@ -135,11 +134,12 @@ function find_mesh_intersections(coords, curve::Function,
                             end
                         end
                         
-                        push!(intersections, MeshIntersection(s_intercept, pt_intercept, copy(dim), copy(indices)) )
-                        intersectionIndex += 1
-
-                        # TODO: if the new point went past multiple bounds, find missing intersections?
-
+                        # Store the intersections from this iteration making sure to keep them ordered in s
+                        dim_prev = copy(dim)
+                        new_intersection = MeshIntersection(s_intercept, pt_intercept, copy(dim), copy(indices))
+                        insert_sorted!(intersections_by_itr, new_intersection)
+                        
+                        # TODO: Move this now that intersections are processed per step?
                         # For compound intersections: update the bounds in each dimension involved
                         for i = 1:numDim
                             # If the intersection was ON a boundary (rather than crossing it),
@@ -157,17 +157,16 @@ function find_mesh_intersections(coords, curve::Function,
             end # if intersection hasn't already been encountered
         end # d for-loop
         
-        # If the most recently discovered intersection was a stop point,
-        # increment the stop point index
-        if i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && intersectionIndex > 0 && abs(intersections[intersectionIndex].s - stop_pts[i_stop_pts]) <= s_tol 
-            i_stop_pts += 1
-        # If the next stop point is between the current point and the next point or is the end point, add it now
-        elseif i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && 
-            ( s + ds > stop_pts[i_stop_pts] || (s == 1 && stop_pts[i_stop_pts] == 1) )
-            push!(intersections, MeshIntersection(stop_pts[i_stop_pts], curve(stop_pts[i_stop_pts]), false*dim, copy(indices_lb))) 
-            intersectionIndex += 1
+        # Add any stop_pts encountered this step
+        while i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && stop_pts[i_stop_pts] < s + ds
+            new_stop_pt = MeshIntersection(stop_pts[i_stop_pts], curve(stop_pts[i_stop_pts]), 
+                                           zeros(Bool, numDim), indices_lb)
+            insert_sorted!(intersections_by_itr, new_stop_pt) 
             i_stop_pts += 1
         end
+        intersections = vcat(intersections, intersections_by_itr)
+
+        # Move to the next step
         s = s_new
         s_new = s + get_ds(ds,s)
 

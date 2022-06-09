@@ -73,7 +73,7 @@ end
 
 function outward_normal(dC_ds, s; normalization=false)
     tangent = dC_ds(s)
-    # Note: need array if normalization is selected (tuples are immutable)
+    # Note: need array if normalization is selected because tuples are immutable
     normal = [ tangent[2], -tangent[1] ] 
     if normalization == true
         return normal ./ norm(normal)
@@ -82,15 +82,15 @@ function outward_normal(dC_ds, s; normalization=false)
     return normal
 end
 
-function insert_sorted!(intersections, new_pt, exclude_duplicates=false, duplicate_warning=true)
+function insert_sorted!(intersections, new_pt; include_duplicates=false, s_tol=1e-8)
     num_pts = length(intersections)
     i = num_pts
-    if num_pts == 0
+    if num_pts == 0 || intersections[end].s < new_pt.s
         push!(intersections, new_pt)
         return
     end
 
-    if exclude_duplicates == false
+    if include_duplicates == true
         if intersections[i].s <= new_pt.s
             push!(intersections, new_pt)
         else
@@ -101,16 +101,16 @@ function insert_sorted!(intersections, new_pt, exclude_duplicates=false, duplica
             end
             intersections[i] = new_pt
         end
-    else # exclude_duplicate == true
+    else # include_duplicate == true
         # check if this point already exists
-        while i >= 1 && new_pt.s < intersections[i].s 
+        while i > 1 && new_pt.s < intersections[i].s 
             i -= 1
         end
-        if intersections[i].s == new_pt.s
+        if abs(intersections[i].s - new_pt.s) < s_tol
             return
         else
-            push!(intersections, intersections[num_curves])
-            for j = num_curves:-1:i+1
+            push!(intersections, intersections[num_pts])
+            for j = num_pts:-1:i+1
                 intersections[j] = intersections[j-1]
             end
             intersections[i] = new_pt

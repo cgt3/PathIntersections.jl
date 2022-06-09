@@ -102,7 +102,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
         i_prev = 0
         i = 1
         I_last = (0,0) # for the indices of the last element to be marked
-        while i > i_prev && i < num_stop_pts
+        while i > i_prev
             i_prev = i
             i_entry = i
             entry_pt = stop_pts[c][i_entry]

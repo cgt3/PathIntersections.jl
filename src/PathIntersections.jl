@@ -97,8 +97,7 @@ include("find_mesh_intersections.jl")
 
 # For mapping quadrature rules to curves
 export map_line_quadrature
-export map_line_quadrature_consecutive
-export map_line_quadrature_multiple
+export map_line_quadrature_nonconsecutive
 include("map_line_quadrature.jl")
 
 export define_regions
