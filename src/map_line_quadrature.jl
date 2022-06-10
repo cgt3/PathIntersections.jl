@@ -1,7 +1,3 @@
-using ForwardDiff
-using LinearAlgebra
-using Revise
-
 function map_line_quadrature(ref_quadr, curve::Function, s_domain::Tuple;
     ref_domain=DEFAULT_REF_DOMAIN,
     normalization=DEFAULT_NORMALIZATION)
