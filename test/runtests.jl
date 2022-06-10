@@ -11,5 +11,7 @@ TESTING_TOL = 1e-12
     include("test_find_mesh_intersections.jl")
     include("test_PiecewiseCurves.jl")
     include("test_PresetGeometries.jl")
-    include("test_map_line_quadrature.jl")    
+    include("test_map_line_quadrature.jl")   
+    
+    include("integration_tests.jl")
 end

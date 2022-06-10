@@ -6,8 +6,27 @@ end
 function get_ds(ds::Function, s)
     return ds(s)
 end
+function update_intersection_bounds(pt, dims, coords, nearby_indices)
+    indices = copy(nearby_indices)
+    for d = 1:length(dims)
+        # Goal: ensure the indices not involved in the intersection point to 
+        #       mesh values <= the pt's coordinates (i.e. coords[d] <= pt[d])
+        if dims[d] == false # this index was not involved in the intersection
+            # Bring the index up if it is too low
+            while indices[d] < length(coords[d]) && coords[d][indices[d]+1] <= pt[d]
+                indices[d] += 1 
+            end
+            # Bring the index down if it is too high
+            while indices[d] > 1 && coords[d][indices[d]] > pt[d]
+                indices[d] -= 1
+            end
+        end
+    end
+    return indices
+end
 
-function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
+function tighten_bounds!(pt_new, dim, coords, indices_lb, indices_ub)
+    # Make sure the indices are as low as possible
     while indices_lb[dim] > 1 && pt_new[dim] <= coords[dim][indices_lb[dim]]
         indices_lb[dim] -= 1
     end
@@ -15,6 +34,7 @@ function tighten_bounds(pt_new, dim, coords, indices_lb, indices_ub)
         indices_ub[dim] -= 1
     end
 
+    # Make sure the indices are as high as possible
     while indices_lb[dim] < length(coords[dim]) && pt_new[dim] > coords[dim][indices_lb[dim] + 1]
         indices_lb[dim] += 1
     end
@@ -69,4 +89,51 @@ function secant_single_dim(intercept, targetDim, curve, s_lb, s_ub, arc_tol)
     end
 
     return s_new, pt_new
+end
+
+function outward_normal(dC_ds, s; normalization=false)
+    tangent = dC_ds(s)
+    # Note: need array if normalization is selected because tuples are immutable
+    normal = [ tangent[2], -tangent[1] ] 
+    if normalization == true
+        return normal ./ norm(normal)
+    end
+
+    return normal
+end
+
+function insert_sorted!(intersections, new_pt; include_duplicates=false, s_tol=1e-8)
+    num_pts = length(intersections)
+    i = num_pts
+    if num_pts == 0 || intersections[end].s < new_pt.s
+        push!(intersections, new_pt)
+        return
+    end
+
+    if include_duplicates == true
+        if intersections[i].s <= new_pt.s
+            push!(intersections, new_pt)
+        else
+            push!(intersections, intersections[i])
+            while i > 1 && new_pt.s < intersections[i].s
+                intersections[i] = intersections[i-1]
+                i -= 1
+            end
+            intersections[i] = new_pt
+        end
+    else # include_duplicate == true
+        # check if this point already exists
+        while i > 1 && new_pt.s < intersections[i].s 
+            i -= 1
+        end
+        if abs(intersections[i].s - new_pt.s) < s_tol
+            return
+        else
+            push!(intersections, intersections[num_pts])
+            for j = num_pts:-1:i+1
+                intersections[j] = intersections[j-1]
+            end
+            intersections[i] = new_pt
+        end
+    end
 end
