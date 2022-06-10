@@ -2,8 +2,8 @@
 function find_mesh_intersections(coords, curve::Function,
      ds=DEFAULT_DS,
     arc_tol=100*eps(eltype(coords[1])),
-    corner_tol=100*eps(eltype(coords[1])),
-    closed_list=true,
+    corner_tol=100*eps(eltype(coords[1]));
+    closed_list=false,
     closure_tol=1e-12)
 
     numDim = length(coords)
@@ -92,12 +92,12 @@ function find_mesh_intersections(coords, curve::Function,
                 # just update the mesh bounds
                 if isInsideDomain
                     # The new point is on the lower bound
-                    if pt_new[d] == coords[d][indices_lb[d]]
+                    if pt_new[d] == coords[d][indices_lb[d]] || (s_new == 1 && abs(pt_new[d] - coords[d][indices_lb[d]]) < arc_tol)
                         s_intercept, pt_intercept = s_new, pt_new
                         intersectionOccurred = true
                         wasOnBoundary = true
                     # The new point is on the upper bound
-                    elseif pt_new[d] == coords[d][indices_ub[d]]
+                    elseif pt_new[d] == coords[d][indices_ub[d]] || (s_new == 1 && abs(pt_new[d] - coords[d][indices_ub[d]]) < arc_tol)
                         s_intercept, pt_intercept = s_new, pt_new
                         indices[d] = indices_ub[d]
                         intersectionOccurred = true
@@ -138,7 +138,6 @@ function find_mesh_intersections(coords, curve::Function,
                         dim_prev = copy(dim)
                         new_intersection = MeshIntersection(s_intercept, pt_intercept, copy(dim), copy(indices))
                         insert_sorted!(intersections_by_itr, new_intersection)
-                        
                         # TODO: Move this now that intersections are processed per step?
                         # For compound intersections: update the bounds in each dimension involved
                         for i = 1:numDim
@@ -171,8 +170,8 @@ function find_mesh_intersections(coords, curve::Function,
         s_new = s + get_ds(ds,s)
 
         # Make sure to test the endpoint
-        if s_new > 1 && s < 1
-            s_new = 1
+        if s_new > 1.0 && s < 1.0
+            s_new = 1.0
         end
         
         pt_curr = pt_new
@@ -187,18 +186,17 @@ function find_mesh_intersections(coords, curve::Function,
         end
     end # s while-loop
 
-    if closed_list == true && sum(intersections[1].pt - intersections[end].pt .> closure_tol) != 0
+    if closed_list == true && length(intersections) > 0 && sum(intersections[1].pt - intersections[end].pt .> closure_tol) != 0
         push!(intersections, intersections[1])
     end
     return intersections
 end
 
-
 function find_mesh_intersections(coords, curves::Union{Array, Tuple},
     ds=DEFAULT_DS, 
-    arc_tol=100*eps(eltype(coords[1])),
-    corner_tol=100*eps(eltype(coords[1])),
-    is_closed = true,
+    arc_tol=DEFAULT_ARC_TOL,
+    corner_tol=DEFAULT_CORNER_TOL;
+    closed_list=false,
     closure_tol=1e-12)
 
     numCurves = length(curves)
@@ -220,12 +218,14 @@ function find_mesh_intersections(coords, curves::Union{Array, Tuple},
     # Process each curve
     if typeof(ds) <: Function
         for c = 1:numCurves
-            intersections = find_mesh_intersections(coords, curves[c], ds, arc_tol[c], corner_tol[c], is_closed, closure_tol)
+            intersections = find_mesh_intersections(coords, curves[c], ds, arc_tol[c], corner_tol[c], 
+                closed_list=closed_list, closure_tol=closure_tol)
             push!(intersectionsByCurve, intersections)
         end
     else
         for c = 1:numCurves
-            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c], is_closed, closure_tol)
+            intersections = find_mesh_intersections(coords, curves[c], ds[c], arc_tol[c], corner_tol[c],
+                 closed_list=closed_list, closure_tol=closure_tol)
             push!(intersectionsByCurve, intersections)
         end
     end

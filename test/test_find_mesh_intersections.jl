@@ -188,7 +188,8 @@
             arc_tol_array = [1e-8, 1e-8]
             corner_tol_array = [1e-8, 1e-8]
 
-            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, corner_tol_array)
+            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array,
+                arc_tol_array, corner_tol_array)
             @test length(intersections_by_curve) == 2
             @test length(intersections_by_curve[1]) == 3
             @test length(intersections_by_curve[2]) == 5
@@ -207,7 +208,8 @@
             arc_tol_array = (1e-8, 1e-8)
             corner_tol_array = (1e-8, 1e-8)
 
-            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array, arc_tol_array, corner_tol_array)
+            intersections_by_curve = find_mesh_intersections(coords, curves, ds_array,
+                arc_tol_array, corner_tol_array)
             @test length(intersections_by_curve) == 2
             @test length(intersections_by_curve[1]) == 3
             @test length(intersections_by_curve[2]) == 5

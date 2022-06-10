@@ -255,7 +255,8 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
     normals_wrt_cell=true )
 
     # 1) Get mesh intersections and curve stop points
-    stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol, true, closure_tol)
+    stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol,
+        closed_list=true, closure_tol=closure_tol)
 
     # 2) Calculate cutcells
     regions_by_element, cutcell_indices, cutcells = define_regions(mesh_coords, curves,
