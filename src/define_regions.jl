@@ -269,10 +269,10 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
     all_n =   Vector{Vector{Vector{Float64}}}[]
     for c = 1:length(cutcells)
         cell_pts, cell_wts, cell_n = map_line_quadrature(ref_quad, cutcells[c], cutcells[c].stop_pts,
-            ref_domain=ref_domain, normalization=normalization )
+                                                         ref_domain=ref_domain, normalization=normalization )
 
         if normals_wrt_cell == true
-            cell_n = @. -cell_n
+            @. cell_n = -cell_n
         end
         push!(all_pts, cell_pts)
         push!(all_wts, cell_wts)
