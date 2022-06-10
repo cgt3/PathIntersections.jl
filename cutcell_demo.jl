@@ -8,22 +8,24 @@ using StaticArrays
 using PathIntersections
 
 ## Curve parameters ------------------------------------------------------------------
-pacman = PresetGeometries.Pacman(R=0.5, x0=0.05, y0=0.2)
+pacman = PresetGeometries.Pacman(R=0.5, x0=0.15, y0=0.2)
 rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6, x0=-0.5, y0=0.5)
 ellipse = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=0., y0=0., theta0=pi/6)
-all_curves = [pacman]
+
+ellipse_dg = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=1e-3, y0=1e-3, theta0=pi/6)
+all_curves = [ellipse_dg]
 
 ## Intersection search parameters ----------------------------------------------------
 # Mesh parameters
 # Domain: [-1,1]^2
-x_coords = LinRange(-1, 1, 11)
-y_coords = LinRange(-1, 1, 11)
+x_coords = LinRange(-1, 1, 101)
+y_coords = LinRange(-1, 1, 101)
 
 coords = [x_coords, y_coords]
 
 arc_tol = 1e-12
 corner_tol = 1e-12
-ds = 1/200
+ds = 1/1000
 
 ref_pts, ref_wts = legendre(5) # Legendre-Gauss quadrature
 ref_quad = (ref_pts, ref_wts)
@@ -50,9 +52,9 @@ end
 # pts = @. ellipse(s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
-# # Plot points along a specific cutcell
+# Plot points along a specific cutcell
 # s = LinRange(0, 1, 50)
-# i1, i2 =  17, 19
+# i1, i2 =  33,2
 # pts = @. cutcells[i1](s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 # pts = @. cutcells[i2](s)
@@ -78,6 +80,5 @@ end
 # c=1
 # pts = [ intersections[c][i].pt for i = 1:length(intersections[c]) ]
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
-# println("Finished plotting intersections and stop pts")
 
 plot!(leg=false)

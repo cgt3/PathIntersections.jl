@@ -14,6 +14,7 @@ function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
     # If the indices are not on the same element return a invalid index
     for i = 1:length(abs_diff)
         if abs_diff[i] > 1
+            @warn "Point indices are not on the same element: entry=$(entry_pt.indices), exit=$(exit_pt.indices)"
             return (-1,-1)
         end
     end

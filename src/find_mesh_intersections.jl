@@ -136,7 +136,8 @@ function find_mesh_intersections(coords, curve::Function,
                         
                         # Store the intersections from this iteration making sure to keep them ordered in s
                         dim_prev = copy(dim)
-                        new_intersection = MeshIntersection(s_intercept, pt_intercept, copy(dim), copy(indices))
+                        intersection_indices = update_intersection_bounds(pt_intercept, dim, coords, indices)
+                        new_intersection = MeshIntersection(s_intercept, pt_intercept, copy(dim), intersection_indices)
                         insert_sorted!(intersections_by_itr, new_intersection)
                         # TODO: Move this now that intersections are processed per step?
                         # For compound intersections: update the bounds in each dimension involved
@@ -146,20 +147,22 @@ function find_mesh_intersections(coords, curve::Function,
                             # current one
                             if wasOnBoundary == false && dim[i] == true # this dim participated in the compound intersection
                                 # should be pt_intercept?
-                                tighten_bounds(pt_new, i, coords, indices_lb, indices_ub)
+                                tighten_bounds!(pt_new, i, coords, indices_lb, indices_ub)
                             end
                         end # Update bounds for-loop
                     end # if intersection occurred
                 else # is outside domain; keep bounds up to date
-                    tighten_bounds(pt_new, d, coords, indices_lb, indices_ub)
+                    tighten_bounds!(pt_new, d, coords, indices_lb, indices_ub)
                 end
             end # if intersection hasn't already been encountered
         end # d for-loop
         
         # Add any stop_pts encountered this step
         while i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && stop_pts[i_stop_pts] < s + ds
-            new_stop_pt = MeshIntersection(stop_pts[i_stop_pts], curve(stop_pts[i_stop_pts]), 
-                                           zeros(Bool, numDim), indices_lb)
+            stop_pt_val = curve(stop_pts[i_stop_pts])
+            stop_pt_indices = update_intersection_bounds(pt_intercept, k, coords, indices)
+            new_stop_pt = MeshIntersection(stop_pts[i_stop_pts], stop_pt_val, 
+                                           zeros(Bool, numDim), stop_pt_indices)
             insert_sorted!(intersections_by_itr, new_stop_pt) 
             i_stop_pts += 1
         end
@@ -180,7 +183,7 @@ function find_mesh_intersections(coords, curve::Function,
         if wasOnBoundary == true
             for d = 1:numDim
                 if dim[d] == true
-                    tighten_bounds(pt_new, d, coords, indices_lb, indices_ub)
+                    tighten_bounds!(pt_new, d, coords, indices_lb, indices_ub)
                 end
             end
         end
