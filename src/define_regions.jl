@@ -20,10 +20,10 @@ function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
     end
     i_element, j_element = 0, 0
     if sum(abs_diff) == 2
-        i_element = minimum([entry_pt.indices[1], exit_pt.indices[1]])
-        j_element = minimum([entry_pt.indices[2], exit_pt.indices[2]])
+        i_element = min(entry_pt.indices[1], exit_pt.indices[1])
+        j_element = min(entry_pt.indices[2], exit_pt.indices[2])
     elseif abs_diff[1] == 1
-        i_element = minimum([entry_pt.indices[1], exit_pt.indices[1]])
+        i_element = min(entry_pt.indices[1], exit_pt.indices[1])
         if entry_pt.pt[1] != mesh_coords[1][entry_pt.indices[1]] ||
            exit_pt.pt[1]  != mesh_coords[1][entry_pt.indices[1]] ||
            tan_entry[1] > 0
@@ -39,7 +39,7 @@ function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
         else
             i_element = entry_pt.indices[1] - 1
         end
-        j_element = minimum([entry_pt.indices[2], exit_pt.indices[2]])
+        j_element = min(entry_pt.indices[2], exit_pt.indices[2])
     end
     return (i_element, j_element)
 end
