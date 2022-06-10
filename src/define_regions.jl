@@ -102,7 +102,8 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
         i_prev = 0
         i = 1
         I_last = (0,0) # for the indices of the last element to be marked
-        while i > i_prev
+        i0_was_skipped = false
+        while (i < num_stop_pts && !i0_was_skipped) || (i > i_prev && i0_was_skipped)
             i_prev = i
             i_entry = i
             entry_pt = stop_pts[c][i_entry]
@@ -120,6 +121,9 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                 i += 1 # move to the next point if we've left the domain
             # Make sure we don't start inside an element
             elseif sum(entry_pt.dim) == 0
+                if i == 1
+                    i0_was_skipped = true
+                end
                 i += 1
             else # We're on the boundary of an element
                 # 1) Find the exit point for this element and add any interior stop points
@@ -154,7 +158,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                 #    and mark said element as cut.
                 I_element = get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords)
                 if regions_by_element[I_element...] != 0
-                    @warn "define_regions: tunneling has occured; element $I_element has been assigned more than one cutcell"
+                    @warn "define_regions: tunneling has occured; element $I_element (cutcell $(length(cutcells)+1)) has been assigned more than one cutcell"
                 end
                 regions_by_element[I_element...] = region
                 region_mask[I_element...] = true
