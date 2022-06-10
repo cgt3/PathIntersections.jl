@@ -8,13 +8,13 @@ using StaticArrays
 using PathIntersections
 
 ## Curve parameters ------------------------------------------------------------------
-pacman = PresetGeometries.Pacman(R=0.5, x0=0.15, y0=0.2)
-pizza_slice = PresetGeometries.Pacman(R=0.5, x0=0.15, y0=0.2, first_jaw=0, second_jaw=pi/8)
+pacman = PresetGeometries.Pacman(R=0.5, x0=0.13, y0=0.2)
+pizza_slice = PresetGeometries.Pacman(R=0.5, x0=0, y0=0, first_jaw=-pi/8, second_jaw=pi/8)
 rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6, x0=-0.5, y0=0.5)
 ellipse = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=0., y0=0., theta0=pi/6)
 
 ellipse_dg = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=1e-3, y0=1e-3, theta0=pi/6)
-all_curves = [pizza_slice]
+all_curves = [pacman]
 
 ## Intersection search parameters ----------------------------------------------------
 # Mesh parameters
@@ -26,7 +26,7 @@ coords = [x_coords, y_coords]
 
 arc_tol = 1e-12
 corner_tol = 1e-12
-ds = 1/1000
+ds = 1/100
 
 ref_pts, ref_wts = legendre(5) # Legendre-Gauss quadrature
 ref_quad = (ref_pts, ref_wts)
@@ -53,12 +53,12 @@ end
 # pts = @. ellipse(s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
-# Plot points along a specific cutcell
+# # Plot points along a specific cutcell
 # s = LinRange(0, 1, 50)
-# i1, i2 =  33,2
+# i1, i2 =  31, 31
 # pts = @. cutcells[i1](s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
-# pts = @. cutcells[i2](s)
+# # pts = @. cutcells[i2](s)
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
 
