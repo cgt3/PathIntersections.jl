@@ -20,7 +20,7 @@
             @test intersections[3].s == 0.75
         end
 
-        @testset "Simple, single-dim, closed-list enforces" begin
+        @testset "Simple, single-dim, closed-list enforced" begin
             circle1(s) = circle(s, (; r=0.5, x0=0, y0=0.2))
             intersections = find_mesh_intersections(coords, circle1, ds, arc_tol, corner_tol, closed_list=true)
 
@@ -28,6 +28,26 @@
             @test intersections[1].s == 0.25
             @test intersections[3].s == 0.75
             @test intersections[5].s == 0.25
+        end
+
+        
+        @testset "Piecewise curve with stop points" begin
+            rect = PresetGeometries.Rectangle(Lx=0.5, Ly=0.5)
+            intersections = find_mesh_intersections(coords, rect, ds, arc_tol, corner_tol, closed_list=true)
+
+            @test length(intersections) == 9
+            # The corners
+            @test intersections[1].s == 0
+            @test intersections[3].s == 0.25
+            @test intersections[5].s == 0.5
+            @test intersections[7].s == 0.75
+            @test intersections[9].s == 1
+
+            # The intersections
+            @test intersections[2].s == 0.125
+            @test intersections[4].s == 0.375
+            @test intersections[6].s == 0.625
+            @test intersections[8].s == 0.875
         end
 
         # Note: start and end point are both counted, so their common intersection
