@@ -83,3 +83,6 @@ end
 # scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
 plot!(leg=false)
+
+quad_wts = cutcell_quad[:wts]
+sum_wts = sum( [ [sum(quad_wts[element][face]) for face=1:length(quad_wts[element]) ] for element=1:length(quad_wts)] )
