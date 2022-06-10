@@ -160,9 +160,10 @@ function find_mesh_intersections(coords, curve::Function,
         # Add any stop_pts encountered this step
         while i_stop_pts > 0 && i_stop_pts <= length(stop_pts) && stop_pts[i_stop_pts] < s + ds
             stop_pt_val = curve(stop_pts[i_stop_pts])
-            stop_pt_indices = update_intersection_bounds(pt_intercept, k, coords, indices)
+            dim_stop_pt = zeros(Bool, numDim)
+            stop_pt_indices = update_intersection_bounds(stop_pt_val, dim_stop_pt, coords, indices_lb)
             new_stop_pt = MeshIntersection(stop_pts[i_stop_pts], stop_pt_val, 
-                                           zeros(Bool, numDim), stop_pt_indices)
+                                           dim_stop_pt, stop_pt_indices)
             insert_sorted!(intersections_by_itr, new_stop_pt) 
             i_stop_pts += 1
         end

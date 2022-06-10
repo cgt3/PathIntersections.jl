@@ -20,6 +20,16 @@
             @test intersections[3].s == 0.75
         end
 
+        @testset "Simple, single-dim, closed-list enforces" begin
+            circle1(s) = circle(s, (; r=0.5, x0=0, y0=0.2))
+            intersections = find_mesh_intersections(coords, circle1, ds, arc_tol, corner_tol, closed_list=true)
+
+            @test length(intersections) == 5
+            @test intersections[1].s == 0.25
+            @test intersections[3].s == 0.75
+            @test intersections[5].s == 0.25
+        end
+
         # Note: start and end point are both counted, so their common intersection
         # gets counted twice
         @testset "Simple, single-dim; start/end pt on boundary" begin

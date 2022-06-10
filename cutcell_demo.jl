@@ -9,17 +9,18 @@ using PathIntersections
 
 ## Curve parameters ------------------------------------------------------------------
 pacman = PresetGeometries.Pacman(R=0.5, x0=0.15, y0=0.2)
+pizza_slice = PresetGeometries.Pacman(R=0.5, x0=0.15, y0=0.2, first_jaw=0, second_jaw=pi/8)
 rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6, x0=-0.5, y0=0.5)
 ellipse = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=0., y0=0., theta0=pi/6)
 
 ellipse_dg = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=1e-3, y0=1e-3, theta0=pi/6)
-all_curves = [ellipse_dg]
+all_curves = [pizza_slice]
 
 ## Intersection search parameters ----------------------------------------------------
 # Mesh parameters
 # Domain: [-1,1]^2
-x_coords = LinRange(-1, 1, 101)
-y_coords = LinRange(-1, 1, 101)
+x_coords = LinRange(-1, 1, 21)
+y_coords = LinRange(-1, 1, 21)
 
 coords = [x_coords, y_coords]
 
