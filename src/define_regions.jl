@@ -246,14 +246,14 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
 end # function
 
 function get_cutcell_nodes(mesh_coords, curves, ref_quad; 
-    ds=DEFAULT_DS,
-    arc_tol=DEFAULT_ARC_TOL,
-    corner_tol=DEFAULT_CORNER_TOL,
-    binary_regions=DEFAULT_BINARY_REGIONS,
-    ref_domain=DEFAULT_REF_DOMAIN,
-    normalization=DEFAULT_NORMALIZATION,
-    closure_tol=1e-12,
-    normals_wrt_cell=true )
+                           ds=DEFAULT_DS,
+                           arc_tol=DEFAULT_ARC_TOL,
+                           corner_tol=DEFAULT_CORNER_TOL,
+                           binary_regions=DEFAULT_BINARY_REGIONS,
+                           ref_domain=DEFAULT_REF_DOMAIN,
+                           normalization=DEFAULT_NORMALIZATION,
+                           closure_tol=1e-12,
+                           normals_wrt_cell=true )
 
     # 1) Get mesh intersections and curve stop points
     stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol,
