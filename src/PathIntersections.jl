@@ -104,4 +104,7 @@ export define_regions
 export get_cutcell_nodes
 include("define_regions.jl")
 
+export is_contained
+include("is_contained.jl")
+
 end # module
