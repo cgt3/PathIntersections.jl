@@ -3,7 +3,6 @@ using Test
 
 using GaussQuadrature
 using LinearAlgebra
-using Revise
 
 TESTING_TOL = 1e-12
 

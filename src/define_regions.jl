@@ -2,7 +2,7 @@ using ForwardDiff
 using SparseArrays
 
 # Note: this function only works properly for points on the boundaries
-function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
+function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords)
     diff = entry_pt.indices .- exit_pt.indices
     abs_diff = abs.(diff)
 
@@ -20,10 +20,10 @@ function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
     end
     i_element, j_element = 0, 0
     if sum(abs_diff) == 2
-        i_element = minimum([entry_pt.indices[1], exit_pt.indices[1]])
-        j_element = minimum([entry_pt.indices[2], exit_pt.indices[2]])
+        i_element = min(entry_pt.indices[1], exit_pt.indices[1])
+        j_element = min(entry_pt.indices[2], exit_pt.indices[2])
     elseif abs_diff[1] == 1
-        i_element = minimum([entry_pt.indices[1], exit_pt.indices[1]])
+        i_element = min(entry_pt.indices[1], exit_pt.indices[1])
         if entry_pt.pt[1] != mesh_coords[1][entry_pt.indices[1]] ||
            exit_pt.pt[1]  != mesh_coords[1][entry_pt.indices[1]] ||
            tan_entry[1] > 0
@@ -39,7 +39,7 @@ function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
         else
             i_element = entry_pt.indices[1] - 1
         end
-        j_element = minimum([entry_pt.indices[2], exit_pt.indices[2]])
+        j_element = min(entry_pt.indices[2], exit_pt.indices[2])
     end
     return (i_element, j_element)
 end
@@ -246,14 +246,14 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
 end # function
 
 function get_cutcell_nodes(mesh_coords, curves, ref_quad; 
-    ds=DEFAULT_DS,
-    arc_tol=DEFAULT_ARC_TOL,
-    corner_tol=DEFAULT_CORNER_TOL,
-    binary_regions=DEFAULT_BINARY_REGIONS,
-    ref_domain=DEFAULT_REF_DOMAIN,
-    normalization=DEFAULT_NORMALIZATION,
-    closure_tol=1e-12,
-    normals_wrt_cell=true )
+                           ds=DEFAULT_DS,
+                           arc_tol=DEFAULT_ARC_TOL,
+                           corner_tol=DEFAULT_CORNER_TOL,
+                           binary_regions=DEFAULT_BINARY_REGIONS,
+                           ref_domain=DEFAULT_REF_DOMAIN,
+                           normalization=DEFAULT_NORMALIZATION,
+                           closure_tol=1e-12,
+                           normals_wrt_cell=true )
 
     # 1) Get mesh intersections and curve stop points
     stop_pts = find_mesh_intersections(mesh_coords, curves, ds, arc_tol, corner_tol,
@@ -264,15 +264,15 @@ function get_cutcell_nodes(mesh_coords, curves, ref_quad;
         stop_pts, binary_regions=binary_regions)
 
     # 3) Compute quadrature on the cutcell boundaries
-    all_pts = Vector{Vector{Vector{Float64}}}[]
+    all_pts = Vector{Vector{SVector{2, Float64}}}[] 
     all_wts = Vector{Vector{Float64}}[]
-    all_n =   Vector{Vector{Vector{Float64}}}[]
+    all_n =   Vector{Vector{SVector{2, Float64}}}[]
     for c = 1:length(cutcells)
         cell_pts, cell_wts, cell_n = map_line_quadrature(ref_quad, cutcells[c], cutcells[c].stop_pts,
-            ref_domain=ref_domain, normalization=normalization )
+                                                         ref_domain=ref_domain, normalization=normalization )
 
         if normals_wrt_cell == true
-            cell_n = @. -cell_n
+            @. cell_n = -cell_n
         end
         push!(all_pts, cell_pts)
         push!(all_wts, cell_wts)

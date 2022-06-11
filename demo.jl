@@ -2,7 +2,6 @@
 using LinearAlgebra
 using Plots
 using StaticArrays
-using Revise
 
 using PathIntersections
 

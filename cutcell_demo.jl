@@ -2,7 +2,6 @@
 using GaussQuadrature
 using LinearAlgebra
 using Plots
-using Revise
 using StaticArrays
 
 using PathIntersections
