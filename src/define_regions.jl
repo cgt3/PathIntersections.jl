@@ -2,7 +2,7 @@ using ForwardDiff
 using SparseArrays
 
 # Note: this function only works properly for points on the boundaries
-function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords; tol=1e-12)
+function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords)
     diff = entry_pt.indices .- exit_pt.indices
     abs_diff = abs.(diff)
 
