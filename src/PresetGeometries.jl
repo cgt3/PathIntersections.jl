@@ -27,16 +27,18 @@ end
 struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
     Rx::T_Rx
     Ry::T_Ry
-    x0::T_x0
-    y0::T_y0
+    x0::T_x0 # For the center of the rectangle
+    y0::T_y0 # For the center of the rectangle
     theta0::T_theta0
     orientation::T_orientation
 end
 
-struct Pacman{T_radius, T_first, T_second, T_x0, T_y0, T_orientation, T_pts, T_function} <: Function
+struct Pacman{T_radius, T1_first, T1_second, T2_first, T2_second, T_x0, T_y0, T_orientation, T_pts, T_function} <: Function
     R::T_radius
-    first_jaw::T_first
-    second_jaw::T_second
+    first_jaw::T1_first
+    second_jaw::T1_second
+    theta_lb::T2_first
+    theta_ub::T2_second
     x0::T_x0
     y0::T_y0
     orientation::T_orientation
@@ -117,8 +119,9 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientatio
             jaw_diff = 2*pi + jaw_diff
         end
     end
+    jaw_diff_mag = abs(jaw_diff)
 
-    total_arc_length = R*(2*pi - abs(jaw_diff)) + 2*R
+    total_arc_length = R*(2*pi - jaw_diff_mag) + 2*R
     s1 = R / total_arc_length
     s2 = (total_arc_length - R) / total_arc_length
 
@@ -127,17 +130,33 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientatio
     first_corner = circle_ref(first_jaw_bounded/(2*pi))
     second_corner = circle_ref(second_jaw_bounded/(2*pi))
     
+    # Define the jaws so that they are the upper and lower bounds of an interval
+    if orientation > 0 # positive orientation
+        theta_lb = first_jaw_bounded
+        theta_ub = first_jaw_bounded + jaw_diff_mag
+    else
+        theta_lb = second_jaw_bounded
+        theta_ub = second_jaw_bounded + jaw_diff_mag
+    end
+
+    if theta_ub > 2*pi || theta_lb > 2*pi
+        theta_lb -= 2*pi
+        theta_ub -= 2*pi
+    elseif  theta_ub < -2*pi || theta_lb < -2*pi
+        theta_lb += 2*pi
+        theta_ub += 2*pi
+    end
+
     # Create arrays for the PiecewiseCurve
     stop_pts = (0, s1, s2, 1)
     subcurves = ( Line((x0,y0), first_corner), 
                   Circle(R=R, x0=x0, y0=y0, orientation=orientation), 
                   Line(second_corner, (x0,y0))
                 );
-
-    s_bounds = ( (0,1), (orientation*first_jaw_bounded/(2*pi), (orientation*first_jaw_bounded + abs(jaw_diff))/(2*pi)), (0,1) )
+    s_bounds = ( (0,1), (orientation*first_jaw_bounded/(2*pi), (orientation*first_jaw_bounded + jaw_diff_mag)/(2*pi)), (0,1) )
     
     func = PiecewiseCurve(stop_pts, subcurves, s_bounds)
-    return Pacman(R, first_jaw_bounded, second_jaw_bounded, x0, y0, orientation, stop_pts, func)
+    return Pacman(R, first_jaw_bounded, second_jaw_bounded, theta_lb, theta_ub, x0, y0, orientation, stop_pts, func)
 end
 
 # Make the structs callable
