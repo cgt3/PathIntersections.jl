@@ -83,6 +83,7 @@ include("PiecewiseCurve.jl")
 export PresetGeometries
 include("PresetGeometries.jl")
 
+
 # For finding mesh-curve intersections
 export MeshIntersection
 mutable struct MeshIntersection{T_param, T_point, T_participants, T_indices}
@@ -104,5 +105,8 @@ include("map_line_quadrature.jl")
 export define_regions
 export get_cutcell_nodes
 include("define_regions.jl")
+
+export is_contained
+include("is_contained.jl")
 
 end # module

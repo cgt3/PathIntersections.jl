@@ -14,6 +14,8 @@ ellipse = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=0., y0=0., theta0=pi/6)
 
 ellipse_dg = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=1e-3, y0=1e-3, theta0=pi/6)
 all_curves = [pacman]
+curve = pacman
+test_pts = [ (0.2, 0.0), (0.5, 0.2), (-0.9, -0.5), (0.13, 0.5)]
 
 ## Intersection search parameters ----------------------------------------------------
 # Mesh parameters
@@ -30,7 +32,7 @@ ds = 1/100
 ref_pts, ref_wts = legendre(5) # Legendre-Gauss quadrature
 ref_quad = (ref_pts, ref_wts)
 intersections = find_mesh_intersections(coords, all_curves, ds, arc_tol, corner_tol)
-regions, cutcell_i, cutcell_quad, cutcells = get_cutcell_nodes(coords, all_curves, ref_quad)
+# regions, cutcell_i, cutcell_quad, cutcells = get_cutcell_nodes(coords, all_curves, ref_quad)
 
 
 # # Plot the mesh
@@ -69,19 +71,21 @@ end
 # end
 # end
 
-# Plot the quadrature nodes on all cutcells
-for cell_pts in cutcell_quad[:pts]
-    for face in 1:length(cell_pts)
-        scatter!(getindex.(cell_pts[face], 1), getindex.(cell_pts[face], 2))
-    end
-end
+# # Plot the quadrature nodes on all cutcells
+# for cell_pts in cutcell_quad[:pts]
+#     for face in 1:length(cell_pts)
+#         scatter!(getindex.(cell_pts[face], 1), getindex.(cell_pts[face], 2))
+#     end
+# end
 
-# # Plot stop points
-# c=1
-# pts = [ intersections[c][i].pt for i = 1:length(intersections[c]) ]
-# scatter!(getindex.(pts, 1), getindex.(pts, 2))
+# Plot stop points
+c=1
+pts = [ intersections[c][i].pt for i = 1:length(intersections[c]) ]
+scatter!(getindex.(pts, 1), getindex.(pts, 2))
+
+# Plot the extra point
+is_inside = @. is_contained(test_pts, curve, ds = 1/25)
+scatter!(getindex.(test_pts, 1), getindex.(test_pts,2))
+
 
 plot!(leg=false)
-
-quad_wts = cutcell_quad[:wts]
-sum_wts = sum( [ [sum(quad_wts[element][face]) for face=1:length(quad_wts[element]) ] for element=1:length(quad_wts)] )
