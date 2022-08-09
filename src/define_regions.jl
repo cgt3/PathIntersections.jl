@@ -112,7 +112,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
 
             cutcell_curves = Function[]
             cutcell_sub_bounds = Tuple[] # TODO: can make type stable?
-            sub_bounds = [1.0*entry_pt.s, entry_pt.s]
+            sub_bounds = SVector(1.0*entry_pt.s, entry_pt.s)
 
             # 0) Make sure we have not left the domain
             if  (abs(entry_pt.pt[1] - mesh_coords[1][1] ) < edge_tol && tan_entry[1] < 0) || # x0
