@@ -1,5 +1,6 @@
 module PresetGeometries
 
+using StaticArrays
 import LinearAlgebra.norm
 
 import ..PiecewiseCurve
@@ -55,7 +56,7 @@ function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
         top    = Line(( Lx/2,  Ly/2), (-Lx/2,  Ly/2))
         left   = Line((-Lx/2,  Ly/2), (-Lx/2, -Ly/2))
         bottom = Line((-Lx/2, -Ly/2), ( Lx/2, -Ly/2))
-        edges = [right, top, left, bottom]
+        edges = SVector(right, top, left, bottom)
 
         first_corner = Ly / (2*(Lx + Ly))
     else
@@ -63,12 +64,12 @@ function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
         left   = Line((-Lx/2, -Ly/2), (-Lx/2,  Ly/2))
         top    = Line((-Lx/2,  Ly/2), ( Lx/2,  Ly/2))
         right  = Line(( Lx/2,  Ly/2), ( Lx/2, -Ly/2))
-        edges=[bottom, left, top, right]
+        edges= SVector(bottom, left, top, right)
 
         first_corner = Lx / (2*(Lx + Ly))
     end
     stop_pts = (0, first_corner, 0.5, 0.5+first_corner, 1)
-    sub_bounds = [(0,1), (0,1), (0,1), (0,1)]
+    sub_bounds = ((0,1), (0,1), (0,1), (0,1))
     func = PiecewiseCurve(stop_pts, edges, sub_bounds)
 
     return Rectangle(Lx, Ly, x0, y0, theta0, orientation, stop_pts, func)
@@ -161,21 +162,21 @@ end
 
 # Make the structs callable
 function (L::Line)(s)
-    return [ (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] ]
+    return SVector( (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] )
 end
 
 function (R::Rectangle)(s) # Also does squares
     (x,y) = R.func(s)
     r = norm((x,y))
     theta = angle(x + y*im)
-    return [r*cos(theta + R.theta0) + R.x0, r*sin(theta + R.theta0) + R.y0]
+    return SVector(r*cos(theta + R.theta0) + R.x0, r*sin(theta + R.theta0) + R.y0)
 end
 
 function (E::Ellipse)(s) # Also does circles
     (x,y) = (E.Rx*cos(E.orientation*2*pi*s), E.Ry*sin(E.orientation*2*pi*s))
     r = norm((x,y))
     theta = angle(x + y*im)
-    return [r*cos(theta + E.theta0) + E.x0, r*sin(theta + E.theta0) + E.y0]
+    return SVector(r*cos(theta + E.theta0) + E.x0, r*sin(theta + E.theta0) + E.y0)
 end
 
 function (p::Pacman)(s)

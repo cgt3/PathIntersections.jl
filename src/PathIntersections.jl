@@ -58,6 +58,7 @@ module PathIntersections
 
 using ForwardDiff
 using LinearAlgebra
+using StaticArrays
 using StructArrays
 
 const DEFAULT_DS = 0.0
