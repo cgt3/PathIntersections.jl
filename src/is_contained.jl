@@ -26,7 +26,7 @@ function is_contained(curve::Function, test_pt; ds=1e-4)
         @. ray_was_crossed = (is_less_than != is_less_than_prev) && is_not_equal
 
         # Note: reverse only works for 2D
-        ray_was_crossed = reverse(ray_was_crossed)
+        reverse!(ray_was_crossed)
         @. above_indices = pt_curve > test_pt && ray_was_crossed
         @. below_indices = pt_curve < test_pt && ray_was_crossed
 
