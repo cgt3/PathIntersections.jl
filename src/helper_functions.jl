@@ -94,7 +94,7 @@ end
 function outward_normal(dC_ds, s; normalization=false)
     tangent = dC_ds(s)
     # Note: need array if normalization is selected because tuples are immutable
-    normal = [ tangent[2], -tangent[1] ] 
+    normal = SVector{2}(tangent[2], -tangent[1])
     if normalization == true
         return normal ./ norm(normal)
     end
