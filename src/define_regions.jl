@@ -236,7 +236,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
         # end
 
         # Add the interior to the region map, but only overwrite zeros
-        interior = @. (regions_by_element == 0) && region_mask
+        interior = @. (regions_by_element == 0) & region_mask
         regions_by_element[interior] .= -region
         regions_by_element
 
