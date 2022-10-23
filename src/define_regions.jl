@@ -104,7 +104,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
         i = 1
         I_last = (0,0) # for the indices of the last element to be marked
         i0_was_skipped = false
-        while (i < num_stop_pts && !i0_was_skipped) || (i > i_prev && i0_was_skipped)
+        while i < num_stop_pts && (!i0_was_skipped || (i > i_prev && i0_was_skipped) )
             i_prev = i
             i_entry = i
             entry_pt = stop_pts[c][i_entry]
@@ -236,7 +236,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
         # end
 
         # Add the interior to the region map, but only overwrite zeros
-        interior = @. (regions_by_element == 0) && region_mask
+        interior = @. (regions_by_element == 0) & region_mask
         regions_by_element[interior] .= -region
         regions_by_element
 

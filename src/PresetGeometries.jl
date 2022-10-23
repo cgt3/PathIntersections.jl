@@ -16,8 +16,8 @@ end
 struct Rectangle{T_Lx, T_Ly, T_x0, T_y0, T_theta0, T_orientation, T_pts, T_function} <: Function
     Lx::T_Lx
     Ly::T_Ly
-    x0::T_x0
-    y0::T_y0
+    x0::T_x0 # for the center of the rectangle
+    y0::T_y0 # for the center of the rectangle
     theta0::T_theta0
     orientation::T_orientation #CurveOrientation
     # These should not be set by users; calculated by the constructor
@@ -28,8 +28,8 @@ end
 struct Ellipse{T_Rx, T_Ry, T_x0, T_y0, T_theta0, T_orientation} <: Function
     Rx::T_Rx
     Ry::T_Ry
-    x0::T_x0 # For the center of the rectangle
-    y0::T_y0 # For the center of the rectangle
+    x0::T_x0 # For the center of the ellipse
+    y0::T_y0 # For the center of the ellipse
     theta0::T_theta0
     orientation::T_orientation
 end

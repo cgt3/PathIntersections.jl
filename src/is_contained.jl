@@ -1,6 +1,6 @@
 # WARNING: if ds is too small you may see lines of mislabelled points near 
 #          aligned with concave corners and/or the start-stop point (s=0,1)
-function is_contained(curve::Function, test_pt; ds=1e-4)
+function is_contained(curve, test_pt; ds=1e-4)
     numDim = length(test_pt)
     # 1) Count the number of times rays drawn from the pt cross the curve
     ray_intersections = zeros(Int, 2, length(test_pt))
@@ -25,7 +25,7 @@ function is_contained(curve::Function, test_pt; ds=1e-4)
         @. is_not_equal = pt_curve != test_pt
         @. ray_was_crossed = (is_less_than != is_less_than_prev) && is_not_equal
 
-        # Note: reverse only works for 2D
+        # Note: reversing only works for 2D
         reverse!(ray_was_crossed)
         @. above_indices = pt_curve > test_pt && ray_was_crossed
         @. below_indices = pt_curve < test_pt && ray_was_crossed
