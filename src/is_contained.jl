@@ -23,12 +23,12 @@ function is_contained(curve, test_pt; ds=1e-4)
         # Use both < and > to ensure equality is not counted
         @. is_less_than = pt_curve < test_pt
         @. is_not_equal = pt_curve != test_pt
-        @. ray_was_crossed = (is_less_than != is_less_than_prev) && is_not_equal
+        @. ray_was_crossed = (is_less_than != is_less_than_prev) & is_not_equal
 
         # Note: reversing only works for 2D
         reverse!(ray_was_crossed)
-        @. above_indices = pt_curve > test_pt && ray_was_crossed
-        @. below_indices = pt_curve < test_pt && ray_was_crossed
+        @. above_indices = pt_curve > test_pt & ray_was_crossed
+        @. below_indices = pt_curve < test_pt & ray_was_crossed
 
         @. ray_intersections[above, above_indices] += ray_was_crossed[above_indices]
         @. ray_intersections[below, below_indices] += ray_was_crossed[below_indices]
