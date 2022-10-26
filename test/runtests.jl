@@ -12,3 +12,4 @@ include("test_PresetGeometries.jl")
 include("test_map_line_quadrature.jl")   
 
 include("integration_tests.jl")
+include("is_contained_tests.jl")
