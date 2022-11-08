@@ -93,3 +93,6 @@ function is_contained(P::PresetGeometries.Pacman, pt)
     println("Theta: $theta vs [$(P.theta_lb), $(P.theta_ub)]")
     return r <= P.R && P.theta_lb <= theta <= P.theta_ub
 end
+
+# generalize `is_contained` to multiple curves
+is_contained(curves::Tuple, pt; kwargs...) = all(map(c -> is_contained(c, pt; kwargs...), curves))
