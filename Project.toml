@@ -1,7 +1,7 @@
 name = "PathIntersections"
 uuid = "4c1a95c7-462a-4a7e-b284-959c63fbf1dc"
 authors = ["Christina G Taylor"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
