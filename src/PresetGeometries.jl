@@ -6,7 +6,7 @@ import LinearAlgebra.norm
 import ..PiecewiseCurve
 
 # Note: these are callable structs
-export Line, Ellipse, Circle, Pacman
+export Line, Ellipse, Circle, Pacman, Fish
 
 struct Line{T_pt1, T_pt2} <: Function
     start_pt::T_pt1
@@ -46,6 +46,16 @@ struct Pacman{T_radius, T1_first, T1_second, T2_first, T2_second, T_x0, T_y0, T_
     # These should not be set by users; calculated by the constructor
     stop_pts::T_pts
     func::T_function 
+end
+
+const FISH_T_START = 0.08;
+
+struct Fish{T_x0, T_y0, float, T_pts, T_func} <: Function
+    x0::T_x0
+    y0::T_y0
+    scale::float
+    stop_pts::T_pts
+    func::T_func
 end
 
 # Needed to default arguments
@@ -160,6 +170,30 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientatio
     return Pacman(R, first_jaw_bounded, second_jaw_bounded, theta_lb, theta_ub, x0, y0, orientation, stop_pts, func)
 end
 
+function Fish(; scale=1, x0=0.0, y0=0.0)
+    Rx = 2.5/5
+    Ry = 1.25/5
+
+    p1 = (x0 + scale*Rx*cos(2*pi*FISH_T_START), y0 + scale*Ry*sin(2*pi*FISH_T_START))
+    p2 = (x0 + scale*(Rx + 0.5*Ry), y0 + scale*Ry)
+    p3 = (p2[1], y0 - scale*Ry)
+    p4 = (p1[1], y0 - scale*Ry*sin(2*pi*FISH_T_START))
+
+    # Based on arc length for even step sizes
+    t1 = 0.77
+    t2 = 0.81
+    t3 = 0.95
+
+    stop_pts = (0, t1, t2, t3, 1)
+    subcurves = ( Ellipse(Rx=scale*Rx, Ry=scale*Ry, x0=x0, y0=y0), 
+                  Line(p4, p3),
+                  Line(p3, p2),
+                  Line(p2, p1) )
+    sub_bounds = ( (FISH_T_START, 1 - FISH_T_START), (0,1), (0,1), (0,1))
+    func = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
+    return Fish(x0, y0, scale, stop_pts, func)
+end
+
 # Make the structs callable
 function (L::Line)(s)
     return SVector( (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] )
@@ -181,6 +215,10 @@ end
 
 function (p::Pacman)(s)
     return p.func(s)
+end
+
+function(f::Fish)(s)
+    return f.func(s)
 end
     
 end # module

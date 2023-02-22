@@ -17,13 +17,13 @@ function find_mesh_intersections(coords, curve::Function,
         dx_min = minimum(min_by_dim)
 
         # Sample the derivative of the curve to approximate its max deriv value
-        s_sample = LinRange(0,1,1000)
+        s_sample = LinRange(0,1,1013)
         dcurve_ds(s) = ForwardDiff.derivative(curve, s)
         deriv_sample = @. dcurve_ds(s_sample)
         deriv_mag = @. norm(deriv_sample)
         max_deriv_mag = maximum(deriv_mag)
 
-        ds = minimum([1/1000, dx_min / max_deriv_mag])
+        ds = minimum([1/1013, dx_min / max_deriv_mag])
     end
 
     # Start walking along the curve at s = 0, watching for the curve's stop points
@@ -193,6 +193,7 @@ function find_mesh_intersections(coords, curve::Function,
     if closed_list == true && length(intersections) > 0 && sum(intersections[1].pt - intersections[end].pt .> closure_tol) != 0
         push!(intersections, intersections[1])
     end
+    
     return intersections
 end
 

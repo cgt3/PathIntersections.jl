@@ -33,7 +33,6 @@ function tighten_bounds!(pt_new, dim, coords, indices_lb, indices_ub)
     while indices_ub[dim] > 1 && pt_new[dim] < coords[dim][indices_ub[dim] - 1]
         indices_ub[dim] -= 1
     end
-
     # Make sure the indices are as high as possible
     while indices_lb[dim] < length(coords[dim]) && pt_new[dim] > coords[dim][indices_lb[dim] + 1]
         indices_lb[dim] += 1

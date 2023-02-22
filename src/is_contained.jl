@@ -88,7 +88,35 @@ function is_contained(P::PresetGeometries.Pacman, pt)
         theta += 2*pi
     end
 
-    println("Radius: $r vs $(P.R)")
-    println("Theta: $theta vs [$(P.theta_lb), $(P.theta_ub)]")
     return r <= P.R && P.theta_lb <= theta <= P.theta_ub
+end
+
+
+function is_contained(F::PresetGeometries.Fish, pt)
+    # Check the ellipse
+    if is_contained(F.func.subcurves[1], pt)
+        return true
+    end
+
+    # Check if we are past the tail in x
+    if pt[1] < F.func.subcurves[2].start_pt[1] || 
+       pt[1] > F.func.subcurves[2].end_pt[1]
+        return false
+    end
+    
+    # Coarse check of whether we are past the tail in y0
+    if pt[2] < F.func.subcurves[2].end_pt[2] || 
+       pt[2] > F.func.subcurves[3].end_pt[2]
+         return false
+     end
+
+    # Fine tuned check if we are past the tail in y
+    t = (pt[1] - F.func.subcurves[2].start_pt[1]) / (F.func.subcurves[2].end_pt[1] - F.func.subcurves[2].start_pt[1] )
+    y_fish = F.func.subcurves[2](t)[2]
+
+    if pt[2] < y_fish || pt[2] > 2*F.y0 - y_fish
+        return false
+    end
+
+    return true
 end
