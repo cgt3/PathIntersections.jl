@@ -1,7 +1,7 @@
 name = "PathIntersections"
 uuid = "4c1a95c7-462a-4a7e-b284-959c63fbf1dc"
 authors = ["Christina G Taylor"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -12,8 +12,11 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
 
 [compat]
+ForwardDiff = "0.10"
+GaussQuadrature = "0.5"
+StaticArrays = "1"
 StructArrays = "0.6"
-julia = "1.7.2"
+julia = "1.7"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
