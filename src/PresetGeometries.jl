@@ -36,10 +36,10 @@ end
 
 struct Pacman{T_radius, T1_first, T1_second, T2_first, T2_second, T_x0, T_y0, T_orientation, T_pts, T_function} <: Function
     R::T_radius
-    first_jaw::T1_first
-    second_jaw::T1_second
-    theta_lb::T2_first
-    theta_ub::T2_second
+    first_jaw::T1_first   # The user-defined angle of the first jaw/radii
+    second_jaw::T1_second # The user-defiend angle of the second jaw/radii
+    theta1::T2_first      # The angle of the first jaw/radii; guaranteed to be in [0, 2pi]
+    theta2::T2_second     # The angle of the second jaw/radii; > theta1 for pos orientation, < theta1 for neg
     x0::T_x0
     y0::T_y0
     orientation::T_orientation

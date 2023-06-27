@@ -33,6 +33,12 @@ ref_pts, ref_wts = legendre(5) # Legendre-Gauss quadrature
 ref_quad = (ref_pts, ref_wts)
 intersections = find_mesh_intersections(coords, all_curves, ds, arc_tol, corner_tol)
 
+# ## To plot along the object
+# s = 0:0.01:1
+# pts_refined = pacman.(s)
+# scatter(getindex.(pts_refined, 1), getindex.(pts_refined, 2), markersize=1) 
+
+
 # # Plot the mesh
 plot(leg=false)
 for i in eachindex(x_coords)
