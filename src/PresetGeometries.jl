@@ -102,72 +102,57 @@ end
 
 # Constructor to enforce first/second_jaw in [0,2pi] for constructing func,
 # the PiecewiseCurve function
-function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0, y0=0, orientation=1)
-    # Enforce first_jaw in [0, 2pi]
-    first_jaw_bounded = first_jaw
-    while first_jaw_bounded < 0
-        first_jaw_bounded += 2*pi
+function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0.0, y0=0.0, orientation=1)
+    # Enforce theta1 (the first jaw) in [0, 2pi]
+    theta1 = first_jaw
+    while theta1 < 0
+        theta1 += 2*pi
     end
-    while first_jaw_bounded > 2*pi
-        first_jaw_bounded -= 2*pi
+    while theta1 > 2*pi
+        theta1 -= 2*pi
     end
 
-    # Enforce second_jaw in [0, 2pi]
-    second_jaw_bounded = second_jaw
-    while second_jaw_bounded < 0
-        second_jaw_bounded += 2*pi
+    # Start theta2 (the second jaw) in [0, 2pi]
+    theta2 = second_jaw
+    while theta2 < 0
+        theta2 += 2*pi
     end
-    while second_jaw_bounded > 2*pi
-        second_jaw_bounded -= 2*pi
+    while theta2 > 2*pi
+        theta2 -= 2*pi
+    end
+
+    # Enforce theta2 (the second jaw) > theta1 for pos orientation
+    # or theta2 < theta1 for neg orientation
+    while orientation > 0 && theta2 < theta1
+        theta2 += 2*pi
+    end
+    while orientation < 0 && theta2 > theta1
+        theta2 -= 2*pi
     end
 
     # Compute the s values at the corners by balancing arc-length
-    jaw_diff = second_jaw_bounded - first_jaw_bounded
-    if orientation*sign(jaw_diff) == -1
-        if sign(jaw_diff) == 1
-            jaw_diff = 2*pi - jaw_diff
-        else
-            jaw_diff = 2*pi + jaw_diff
-        end
-    end
-    jaw_diff_mag = abs(jaw_diff)
-
-    total_arc_length = R*(2*pi - jaw_diff_mag) + 2*R
-    s1 = R / total_arc_length
-    s2 = (total_arc_length - R) / total_arc_length
+    jaw_diff = theta2 - theta1
 
     # Compute the jaw corner point locations for the lines
     circle_ref = Circle(R=R, x0=x0, y0=y0)
-    first_corner = circle_ref(first_jaw_bounded/(2*pi))
-    second_corner = circle_ref(second_jaw_bounded/(2*pi))
+    first_corner = circle_ref(theta1/(2*pi))
+    second_corner = circle_ref(theta2/(2*pi))
     
-    # Define the jaws so that they are the upper and lower bounds of an interval
-    if orientation > 0 # positive orientation
-        theta_lb = first_jaw_bounded
-        theta_ub = first_jaw_bounded + jaw_diff_mag
-    else
-        theta_lb = second_jaw_bounded
-        theta_ub = second_jaw_bounded + jaw_diff_mag
-    end
-
-    if theta_ub > 2*pi || theta_lb > 2*pi
-        theta_lb -= 2*pi
-        theta_ub -= 2*pi
-    elseif  theta_ub < -2*pi || theta_lb < -2*pi
-        theta_lb += 2*pi
-        theta_ub += 2*pi
-    end
+    # Define the stop points for balanced arc length
+    total_arc_length = R*abs(jaw_diff) + 2*R
+    s1 = R / total_arc_length
+    s2 = (total_arc_length - R) / total_arc_length
 
     # Create arrays for the PiecewiseCurve
     stop_pts = (0, s1, s2, 1)
     subcurves = ( Line((x0,y0), first_corner), 
-                  Circle(R=R, x0=x0, y0=y0, orientation=orientation), 
+                  Circle(R=R, x0=x0, y0=y0), # Note: the orientation is reversed by the subbounds when necessary 
                   Line(second_corner, (x0,y0))
                 );
-    s_bounds = ( (0,1), (orientation*first_jaw_bounded/(2*pi), (orientation*first_jaw_bounded + jaw_diff_mag)/(2*pi)), (0,1) )
+    sub_bounds = ( (0,1), (theta1/(2*pi), theta2/(2*pi)), (0,1) )
     
-    func = PiecewiseCurve(stop_pts, subcurves, s_bounds)
-    return Pacman(R, first_jaw_bounded, second_jaw_bounded, theta_lb, theta_ub, x0, y0, orientation, stop_pts, func)
+    func = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
+    return Pacman(R, first_jaw, second_jaw, theta1, theta2, x0, y0, orientation, stop_pts, func)
 end
 
 function Fish(; scale=1, x0=0.0, y0=0.0)
