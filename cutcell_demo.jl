@@ -7,9 +7,9 @@ using StaticArrays
 using PathIntersections
 
 ## Curve parameters ------------------------------------------------------------------
-pacman = PresetGeometries.Pacman(R=0.5, x0=0.13, y0=0.2)
-pizza_slice = PresetGeometries.Pacman(R=0.5, x0=0, y0=0, first_jaw=-pi/8, second_jaw=pi/8)
-rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6, x0=-0.5, y0=0.5)
+pacman = PresetGeometries.Pacman(R=0.5, first_jaw=3*pi/8, second_jaw=13*pi/4, orientation=-1)
+pizza_slice = PresetGeometries.Pacman(R=0.5, x0=0, y0=0, first_jaw=-pi/8, second_jaw=pi/4, orientation=-1)
+rect = PresetGeometries.Rectangle(Lx=0.85, Ly=0.6)
 ellipse = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=0., y0=0., theta0=pi/6)
 
 ellipse_dg = PresetGeometries.Ellipse(Rx=0.5, Ry=0.25, x0=1e-3, y0=1e-3, theta0=pi/6)
@@ -20,8 +20,8 @@ test_pts = [ (0.2, 0.0), (0.5, 0.2), (-0.9, -0.5), (0.13, 0.5)]
 ## Intersection search parameters ----------------------------------------------------
 # Mesh parameters
 # Domain: [-1,1]^2
-x_coords = LinRange(-1, 1, 21)
-y_coords = LinRange(-1, 1, 21)
+x_coords = LinRange(-1, 1, 10+1)
+y_coords = LinRange(-1, 1, 10+1)
 
 coords = [x_coords, y_coords]
 
@@ -32,17 +32,21 @@ ds = 1/100
 ref_pts, ref_wts = legendre(5) # Legendre-Gauss quadrature
 ref_quad = (ref_pts, ref_wts)
 intersections = find_mesh_intersections(coords, all_curves, ds, arc_tol, corner_tol)
-# regions, cutcell_i, cutcell_quad, cutcells = get_cutcell_nodes(coords, all_curves, ref_quad)
+
+# ## To plot along the object
+# s = 0:0.01:1
+# pts_refined = pacman.(s)
+# scatter(getindex.(pts_refined, 1), getindex.(pts_refined, 2), markersize=1) 
 
 
 # # Plot the mesh
 plot(leg=false)
 for i in eachindex(x_coords)
-    plot!(SVector{2}(x_coords[i], x_coords[i]), SVector{2}(extrema(y_coords)...))
+    plot!(SVector{2}(x_coords[i], x_coords[i]), SVector{2}(extrema(y_coords)...), linecolor=:black)
 end
 
 for i in eachindex(y_coords)
-    plot!(SVector{2}(extrema(x_coords)...), SVector{2}(y_coords[i], y_coords[i]))
+    plot!(SVector{2}(extrema(x_coords)...), SVector{2}(y_coords[i], y_coords[i]), linecolor=:black)
 end
 
 
@@ -84,8 +88,8 @@ pts = [ intersections[c][i].pt for i = 1:length(intersections[c]) ]
 scatter!(getindex.(pts, 1), getindex.(pts, 2))
 
 # Plot the extra point
-is_inside = @. is_contained(test_pts, curve, ds = 1/25)
-scatter!(getindex.(test_pts, 1), getindex.(test_pts,2))
+# is_inside = @. is_contained(test_pts, curve, ds = 1/25)
+# scatter!(getindex.(test_pts, 1), getindex.(test_pts,2))
 
 
 plot!(leg=false)

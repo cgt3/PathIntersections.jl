@@ -83,13 +83,15 @@ function is_contained(P::PresetGeometries.Pacman, pt)
 
     r = sqrt(x^2 + y^2)
     theta = angle(x + y*im)
-    if theta > P.theta_lb + 2*pi
+    theta_lb = P.orientation == 1 ? P.theta1 : P.theta2
+    theta_ub = P.orientation == 1 ? P.theta2 : P.theta1
+    if theta > theta_lb + 2*pi
         theta -= 2*pi
-    elseif theta < P.theta_ub - 2*pi
+    elseif theta < theta_ub - 2*pi
         theta += 2*pi
     end
 
-    return r <= P.R && P.theta_lb <= theta <= P.theta_ub
+    return r <= P.R && theta_lb <= theta <= theta_ub
 end
 
 

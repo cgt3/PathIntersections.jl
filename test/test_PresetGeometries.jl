@@ -31,14 +31,14 @@
         # Negative angles
         pacman = PresetGeometries.Pacman(first_jaw=-7*pi/4, second_jaw=-pi/4) # same as 45->(-45)
         @test length(pacman.func.stop_pts) == 4
-        @test abs(pacman.first_jaw - pi/4) < TESTING_TOL
-        @test abs(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+        @test abs(pacman.theta1 - pi/4) < TESTING_TOL
+        @test abs(pacman.theta2 - 7*pi/4) < TESTING_TOL
 
         # Angles over 2pi
         pacman = PresetGeometries.Pacman(first_jaw=9*pi/4, second_jaw=15pi/4) # same as 45->(-45)
         @test length(pacman.func.stop_pts) == 4
-        @test abs(pacman.first_jaw - pi/4) < TESTING_TOL
-        @test abs(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+        @test abs(pacman.theta1 - pi/4) < TESTING_TOL
+        @test abs(pacman.theta2 - 7*pi/4) < TESTING_TOL
     end
 
     
@@ -47,15 +47,15 @@
         # Pizza slice via negative orientation
         pacman = PresetGeometries.Pacman(first_jaw=pi/4, second_jaw=-pi/4, orientation=-1)
         @test length(pacman.func.stop_pts) == 4
-        @test abs(pacman.first_jaw - pi/4) < TESTING_TOL
-        @test abs(pacman.second_jaw - 7*pi/4) < TESTING_TOL
+        @test abs(pacman.theta1 - pi/4) < TESTING_TOL
+        @test abs(pacman.theta2 + pi/4) < TESTING_TOL
         @test norm(pacman(0.5) .- (1,0)) < TESTING_TOL
 
         # Pizza slice via positive orientation
         pacman = PresetGeometries.Pacman(first_jaw=pi/2, second_jaw=0) 
         @test length(pacman.func.stop_pts) == 4
-        @test abs(pacman.first_jaw - pi/2) < TESTING_TOL
-        @test abs(pacman.second_jaw - 0) < TESTING_TOL
+        @test abs(pacman.theta1 - pi/2) < TESTING_TOL
+        @test abs(pacman.theta2 - 2*pi) < TESTING_TOL
         @test norm(pacman(0.5) .+ (sqrt(2)/2, sqrt(2)/2)) < TESTING_TOL
     end
 
