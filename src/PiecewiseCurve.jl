@@ -86,7 +86,6 @@ function PiecewiseCurve(stop_pts, subcurves; enforce_bounds=true, continuity_tol
     return PiecewiseCurve(stop_pts, subcurves, sub_bounds, enforce_bounds=enforce_bounds, continuity_tol=continuity_tol, steps_per_segment=steps_per_segment)
 end
 
-const PiecwiseFunction{T_pts, T_curves, T_bounds, T_continuity} = PiecewiseCurve{T_pts, T_curves, T_bounds, T_continuity, nothing, nothing, nothing}
 function PiecewiseFunction(stop_pts, subcurves, sub_bounds; continuity_tol=DEFAULT_CONTINUITY_TOL, steps_per_segment=1000)
     return PiecewiseCurve(stop_pts, subcurves, sub_bounds, enforce_bounds=false, continuity_tol=continuity_tol, steps_per_segment=steps_per_segment)
 end
