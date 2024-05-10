@@ -62,7 +62,7 @@ function PiecewiseCurve(stop_pts, subcurves, sub_bounds;
         for j = 1:steps_per_segment
             sub_s = sub_s_prev + sub_ds
             pt = subcurves[i](sub_s)
-            arc_lengths[i] += norm(pt - pt_prev)
+            arc_lengths[i] += norm(pt .- pt_prev)
 
             sub_s_prev = sub_s
             pt_prev = pt
