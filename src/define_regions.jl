@@ -93,7 +93,12 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
             region = c
         end
         num_stop_pts = length(stop_pts[c])
-        tangent(s) = ForwardDiff.derivative(curves[c], s)
+
+        # add a let block to avoid closure performance type instability 
+        # https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-captured
+        tangent = let curve = curves[c]
+            tangent(s) = ForwardDiff.derivative(curve, s)
+        end
 
 
         # For filling in the curve's region later
