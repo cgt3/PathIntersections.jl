@@ -75,9 +75,7 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
 
     regions_by_element = zeros(Int, nx-1, ny-1)
     cutcell_indices = spzeros(Int, nx-1, ny-1)
-
-    T = eltype(first(mesh_coords))
-    cutcells = PiecewiseCurve{Vector{T}, Vector{Function}, Vector{Tuple{T, T}}, T}[]
+    cutcells = PiecewiseCurve[]
 
     num_curves = length(curves)
     
