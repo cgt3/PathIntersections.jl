@@ -52,13 +52,13 @@ function find_mesh_intersections(coords, curve::Function,
     end
 
     # Walk along the curve, sensing for intersections in each dim
-    intersections = MeshIntersection[]
+    intersections = MeshIntersection{Float64, SVector{2, Float64}, Vector{Bool}, Vector{Int}}[]
     dim = zeros(Bool, numDim)
 
     s_new = s
     pt_new = pt_curr
     while s < 1
-        intersections_by_itr = MeshIntersection[]
+        intersections_by_itr = MeshIntersection{Float64, SVector{2, Float64}, Vector{Bool}, Vector{Int}}[]
 
         # Check if we are currently in the domain or crossing into or out of it
         curr_isInsideDomain = true
@@ -205,7 +205,7 @@ function find_mesh_intersections(coords, curves::Union{Array, Tuple},
     closure_tol=1e-12)
 
     numCurves = length(curves)
-    intersectionsByCurve = Vector{MeshIntersection}[]
+    intersectionsByCurve = Vector{MeshIntersection{Float64, SVector{2, Float64}, Vector{Bool}, Vector{Int}}}[]
 
     # Allow scalar arguments without changing functionality
     if typeof(ds) <:Real
