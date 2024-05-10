@@ -6,18 +6,17 @@ function (f::ConstFunction)(x)
     return f.value
 end
 
-struct PiecewiseCurve{T_points, T_curves, T_bounds, 
-    T_continuity, T_closed, T_subArcLengths, T_arcLength} <: Function # Callable object for piecewise defined curves
+struct PiecewiseCurve{T_points, T_curves, T_bounds, T} <: Function # Callable object for piecewise defined curves
 
     stop_pts::T_points # Warning: these must be in increasing order and include s = 0,1
     subcurves::T_curves
     sub_bounds::T_bounds
     enforce_bounds::Bool
     
-    is_continuous::T_continuity
-    is_closed::T_closed
-    arc_lengths::T_subArcLengths
-    total_arc_length::T_arcLength
+    is_continuous::Bool
+    is_closed::Bool
+    arc_lengths::Vector{T}
+    total_arc_length::T
 end # struct PiecewiseCurve def
 
 function PiecewiseCurve(stop_pts, subcurves, sub_bounds; 
@@ -86,7 +85,6 @@ function PiecewiseCurve(stop_pts, subcurves; enforce_bounds=true, continuity_tol
     return PiecewiseCurve(stop_pts, subcurves, sub_bounds, enforce_bounds=enforce_bounds, continuity_tol=continuity_tol, steps_per_segment=steps_per_segment)
 end
 
-const PiecwiseFunction{T_pts, T_curves, T_bounds, T_continuity} = PiecewiseCurve{T_pts, T_curves, T_bounds, T_continuity, nothing, nothing, nothing}
 function PiecewiseFunction(stop_pts, subcurves, sub_bounds; continuity_tol=DEFAULT_CONTINUITY_TOL, steps_per_segment=1000)
     return PiecewiseCurve(stop_pts, subcurves, sub_bounds, enforce_bounds=false, continuity_tol=continuity_tol, steps_per_segment=steps_per_segment)
 end

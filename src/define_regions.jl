@@ -75,7 +75,9 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
 
     regions_by_element = zeros(Int, nx-1, ny-1)
     cutcell_indices = spzeros(Int, nx-1, ny-1)
-    cutcells = PiecewiseCurve[]
+
+    T = eltype(first(mesh_coords))
+    cutcells = PiecewiseCurve{Vector{Float64}, Vector{Function}, Vector{Tuple{Float64, Float64}}, Float64}[]
 
     num_curves = length(curves)
     
@@ -91,7 +93,12 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
             region = c
         end
         num_stop_pts = length(stop_pts[c])
-        tangent(s) = ForwardDiff.derivative(curves[c], s)
+
+        # add a let block to avoid closure performance type instability 
+        # https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-captured
+        tangent = let curve = curves[c]
+            tangent(s) = ForwardDiff.derivative(curve, s)
+        end
 
 
         # For filling in the curve's region later
@@ -110,9 +117,10 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
             entry_pt = stop_pts[c][i_entry]
             tan_entry = tangent(entry_pt.s)
 
-            cutcell_curves = Function[]
-            cutcell_sub_bounds = Tuple[] # TODO: can make type stable?
+            cutcell_curves = Function[]           
             sub_bounds = [1.0*entry_pt.s, entry_pt.s]
+            T = eltype(sub_bounds)
+            cutcell_sub_bounds = Tuple{T, T}[] 
 
             # 0) Make sure we have not left the domain
             if  (abs(entry_pt.pt[1] - mesh_coords[1][1] ) < edge_tol && tan_entry[1] < 0) || # x0
@@ -141,7 +149,8 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                     end
                     sub_bounds[2] = stop_pts[c][j_next].s
                     push!(cutcell_curves, curves[c])
-                    push!(cutcell_sub_bounds, Tuple(sub_bounds))
+
+                    push!(cutcell_sub_bounds, (sub_bounds[1], sub_bounds[2]))
                     num_subcurves += 1
 
                     # WARNING: If tunneling is to be allowed this condition won't
@@ -187,13 +196,13 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                     next_pt = ( mesh_coords[1][I_element[1] + pt_incr[(f+3) % 4 + 1][1]], 
                                 mesh_coords[2][I_element[2] + pt_incr[(f+3) % 4 + 1][2]] )
                     push!(cutcell_curves, Line(Tuple(curr_pt), Tuple(next_pt)))
-                    push!(cutcell_sub_bounds, (0,1))
+                    push!(cutcell_sub_bounds, (0.0, 1.0))
                     num_subcurves += 1
                     curr_pt = next_pt
                 end
                 # 5) Close the curve
                 push!(cutcell_curves, Line(Tuple(next_pt), Tuple(entry_pt.pt)))
-                push!(cutcell_sub_bounds, (0,1))
+                push!(cutcell_sub_bounds, (0.0, 1.0))
                 num_subcurves += 1
 
                 cutcell_stop_pts = [k/num_subcurves for k=0:num_subcurves]

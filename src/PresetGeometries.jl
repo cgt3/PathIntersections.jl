@@ -78,25 +78,25 @@ function Rectangle(; Lx=1, Ly=1, x0=0, y0=0, theta0=0, orientation=1)
 
         first_corner = Lx / (2*(Lx + Ly))
     end
-    stop_pts = (0, first_corner, 0.5, 0.5+first_corner, 1)
-    sub_bounds = ((0,1), (0,1), (0,1), (0,1))
+    stop_pts = (0.0, first_corner, 0.5, 0.5+first_corner, 1.0)
+    sub_bounds = ((0.0, 1.0), (0.0, 1.0), (0.0, 1.0), (0.0, 1.0))
     func = PiecewiseCurve(stop_pts, edges, sub_bounds)
 
     return Rectangle(Lx, Ly, x0, y0, theta0, orientation, stop_pts, func)
 end
 
-function Ellipse(; Rx=1, Ry=1, x0=0, y0=0, theta0=0, orientation=1)
+function Ellipse(; Rx=1.0, Ry=1.0, x0=0.0, y0=0.0, theta0=0.0, orientation=1)
     return Ellipse(Rx, Ry, x0, y0, theta0, orientation)
 end
 
 # Simplified geometries
 const Square{T_L, T_x0, T_y0, T_theta0, T_orientation} = Rectangle{T_L, T_L, T_x0, T_y0, T_theta0, T_orientation}
-function Square(; L=1, x0=0, y0=0, theta0=0, orientation=1)
+function Square(; L=1.0, x0=0.0, y0=0.0, theta0=0.0, orientation=1)
     return Rectangle(Lx=L, Ly=L, x0=x0, y0=y0, theta0=theta0, orientation=orientation)
 end
 
 const Circle{T_R, T_x0, T_y0, T_theta0, T_orientation} = Ellipse{T_R, T_R, T_x0, T_y0, T_theta0, T_orientation}
-function Circle(; R=1, x0=0, y0=0, theta0=0, orientation=1)
+function Circle(; R=1.0, x0=0.0, y0=0.0, theta0=0.0, orientation=1)
     return Ellipse(R, R, x0, y0, theta0, orientation)
 end
 
@@ -149,7 +149,7 @@ function Pacman(; R=1, first_jaw=pi/4, second_jaw=7*pi/4, x0=0.0, y0=0.0, orient
                   Circle(R=R, x0=x0, y0=y0), # Note: the orientation is reversed by the subbounds when necessary 
                   Line(second_corner, (x0,y0))
                 );
-    sub_bounds = ( (0,1), (theta1/(2*pi), theta2/(2*pi)), (0,1) )
+    sub_bounds = ( (0.0, 1.0), (theta1/(2*pi), theta2/(2*pi)), (0.0, 1.0) )
     
     func = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
     return Pacman(R, first_jaw, second_jaw, theta1, theta2, x0, y0, orientation, stop_pts, func)
@@ -169,12 +169,12 @@ function Fish(; scale=1, x0=0.0, y0=0.0)
     t2 = 0.81
     t3 = 0.95
 
-    stop_pts = (0, t1, t2, t3, 1)
+    stop_pts = (0.0, t1, t2, t3, 1.0)
     subcurves = ( Ellipse(Rx=scale*Rx, Ry=scale*Ry, x0=x0, y0=y0), 
                   Line(p4, p3),
                   Line(p3, p2),
                   Line(p2, p1) )
-    sub_bounds = ( (FISH_T_START, 1 - FISH_T_START), (0,1), (0,1), (0,1))
+    sub_bounds = ( (FISH_T_START, 1 - FISH_T_START), (0.0,1.0), (0.0,1.0), (0.0,1.0))
     func = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
     return Fish(x0, y0, scale, stop_pts, func)
 end

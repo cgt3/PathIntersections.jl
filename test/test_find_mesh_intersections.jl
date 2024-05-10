@@ -8,8 +8,8 @@
     arc_tol = 1e-8
     corner_tol = 1e-8
 
-    circle(s, param) = [param.r*cos(2*pi*s) + param.x0, param.r*sin(2*pi*s) + param.y0]
-    circle_noParams(s) = [0.5*cos(2*pi*s), 0.5*sin(2*pi*s)]
+    circle(s, param) = SVector(param.r*cos(2*pi*s) + param.x0, param.r*sin(2*pi*s) + param.y0)
+    circle_noParams(s) = SVector(0.5*cos(2*pi*s), 0.5*sin(2*pi*s))
 
     @testset "Simple, single-dim" begin
         circle1(s) = circle(s, (; r=0.5, x0=0, y0=0.2))
@@ -134,7 +134,7 @@
 
     # 9. Complete code coverage by tripping intersections on lower boundaries
     @testset "Lower bound intersections" begin            
-        circle_neg(s) = [0.5*cos(-2*pi*s), 0.5*sin(-2*pi*s)]
+        circle_neg(s) = SVector(0.5*cos(-2*pi*s), 0.5*sin(-2*pi*s))
         
         x_coords = [-1 0 1]
         y_coords = [-1 -0.5 circle_neg(2*ds)[2] 0 1]
@@ -187,7 +187,7 @@
     # 12. Using a function for the step size
     @testset "Providing ds as a function; single curve" begin
         # A curve where the arc length per constant step in s varies        
-        ellipse(s) = [0.5*cos(2*pi*s), 0.05*sin(2*pi*s)]
+        ellipse(s) = SVector(0.5*cos(2*pi*s), 0.05*sin(2*pi*s))
         ds_func(s) = ds + ds*cos(2*pi*s)^2
 
         x_coords = [-1.0 0.0 1.0]

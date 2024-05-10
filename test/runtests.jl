@@ -1,6 +1,7 @@
 using PathIntersections
 using Test
 
+using StaticArrays
 using GaussQuadrature
 using LinearAlgebra
 
