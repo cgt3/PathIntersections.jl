@@ -34,7 +34,7 @@ function find_mesh_intersections(coords, curve::Function,
         i_stop_pts = -1
     end
 
-    s = 0
+    s = 0.0
     pt_curr = curve(s)
     
     # Find the indices to the closest mesh values in each dimension
