@@ -1,6 +1,8 @@
 using ForwardDiff
 using SparseArrays
 
+include("assign_regions_disjointSets.jl")
+
 # Note: this function only works properly for points on the boundaries
 function get_element_index(entry_pt, exit_pt, tan_entry, mesh_coords)
     diff = entry_pt.indices .- exit_pt.indices
@@ -72,7 +74,6 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
 
     nx = length(mesh_coords[1])
     ny = length(mesh_coords[2])
-
     regions_by_element = zeros(Int, nx-1, ny-1)
     cutcell_indices = spzeros(Int, nx-1, ny-1)
 
@@ -100,11 +101,6 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
             tangent(s) = ForwardDiff.derivative(curve, s)
         end
 
-
-        # For filling in the curve's region later
-        i_min, i_max = nx, 1
-        j_min, j_max = ny, 1
-        region_mask = zeros(Bool, nx-1, ny-1)
 
         # For each stop point on that curve
         i_prev = 0
@@ -171,9 +167,6 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                     @warn "define_regions: tunneling has occured; element $I_element (cutcell $(length(cutcells)+1)) has been assigned more than one cutcell"
                 end
                 regions_by_element[I_element...] = region
-                region_mask[I_element...] = true
-                i_min, i_max = minimum([I_element[1], i_min]), maximum([I_element[1], i_max])
-                j_min, j_max = minimum([I_element[2], j_min]), maximum([I_element[2], j_max])
 
 
                 # 3) Determine the faces the entry and exit points are on
@@ -217,39 +210,10 @@ function define_regions(mesh_coords, curves, stop_pts; binary_regions=false, edg
                 I_last = I_element
             end # if: whether we're in the domain or not
         end # while num_stop_pts[c]
-
-        # 8) Mark elements inside the curve as excluded
-        for j = j_min:j_max
-            # Find where the interior starts
-            i_start = i_min
-            while i_start+1 < i_max && !(region_mask[i_start,j] == true && region_mask[i_start+1,j] == false) 
-                i_start += 1
-            end
-            
-            i_end = i_max
-            while i_end-1 > i_min && !(region_mask[i_end,j] == true && region_mask[i_end-1,j] == false) 
-                i_end -= 1
-            end
-
-            for i = i_start:i_end # Note is i_end < i_start this should have no effect
-                region_mask[i,j] = true
-            end
-        end
-
-        # # WARNING: This if-statement may not catch every case
-        # # Check the direction of the normal to see if the mask needs to be flipped
-        # n_out = outward_normal(tangent, 1)
-        # if  0 < (sign(n_out[1]) + i_last) <= nx && 0 < (sign(n_out[2]) + j_last) <= ny &&
-        #     (!region_mask[sign(n_out[1]) + i_last, j_last] || !region_mask[i_last, sign(n_out[2]) + j_last] )
-        #     region_mask = !region_mask
-        # end
-
-        # Add the interior to the region map, but only overwrite zeros
-        interior = @. (regions_by_element == 0) & region_mask
-        regions_by_element[interior] .= -region
-        regions_by_element
-
     end # for: c in 1:num_curves
+
+    # 8) Assign each element to a region
+    assign_regions!(regions_by_element, mesh_coords, cutcell_indices, cutcells, binary_regions=binary_regions)
 
     return regions_by_element, cutcell_indices, cutcells
 end # function

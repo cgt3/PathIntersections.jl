@@ -60,20 +60,25 @@ end
 
 function is_contained(E::PresetGeometries.Ellipse, pt)
     # Remove the rotation
-    r = sqrt(pt[1]^2 + pt[2]^2)
-    theta = angle(pt[1] + pt[2]*im)
+    r = sqrt((pt[1]-E.x0)^2 + (pt[2]-E.y0)^2)
+    theta = angle((pt[2]-E.x0) + (pt[2]-E.y0)*im)
     x,y = r*cos(theta - E.theta0), r*sin(theta - E.theta0)
 
-    return ((x-E.x0)/E.Rx)^2 + ((y-E.y0)/E.Ry)^2 <= 1
+    if E.orientation == 1
+        return (x/E.Rx)^2 + (y/E.Ry)^2 <= 1
+    else
+        return (x/E.Rx)^2 + (y/E.Ry)^2 >= 1
+    end
 end
+
 
 function is_contained(R::PresetGeometries.Rectangle, pt)
     # Remove the rotation
-    r = sqrt(pt[1]^2 + pt[2]^2)
-    theta = angle(pt[1] + pt[2]*im)
+    r = sqrt((pt[1]-R.x0)^2 + (pt[2]-R.y0)^2)
+    theta = angle((pt[1]-R.x0) + (pt[2]-R.y0)*im)
     x,y = r*cos(theta - R.theta0), r*sin(theta - R.theta0)
 
-    return abs(x-R.x0) < R.Lx/2 && abs(y-R.y0) <= R.Ly/2
+    return abs(x) < R.Lx/2 && abs(y) <= R.Ly/2
 end
 
 function is_contained(P::PresetGeometries.Pacman, pt)
@@ -83,8 +88,8 @@ function is_contained(P::PresetGeometries.Pacman, pt)
 
     r = sqrt(x^2 + y^2)
     theta = angle(x + y*im)
-    theta_lb = P.orientation == 1 ? P.theta1 : P.theta2
-    theta_ub = P.orientation == 1 ? P.theta2 : P.theta1
+    theta_lb = (P.orientation == 1) ? P.theta1 : P.theta2
+    theta_ub = (P.orientation == 1) ? P.theta2 : P.theta1
     if theta > theta_lb + 2*pi
         theta -= 2*pi
     elseif theta < theta_ub - 2*pi
@@ -122,6 +127,22 @@ function is_contained(F::PresetGeometries.Fish, pt)
     end
 
     return true
+end
+
+
+function is_contained(B::PresetGeometries.BiconvexAirfoil, pt)
+    # Remove the rotation from the AoA
+    r = sqrt((pt[1]-B.x0)^2 + (pt[2]-B.y0)^2)
+    theta = angle((pt[1]-B.x0) + (pt[2]-B.y0)*im)
+    x_new, y_new = r*cos(theta + B.AoA), r*sin(theta + B.AoA)
+
+    # Check the two circles defining the airfoil
+    if is_contained(B.func.subcurves[1], (x_new,y_new)) && 
+       is_contained(B.func.subcurves[2], (x_new,y_new))
+        return true
+    else
+        return false
+    end
 end
 
 # generalize `is_contained` to multiple curves
