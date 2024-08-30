@@ -137,7 +137,7 @@ function find_mesh_intersections(coords, curve::Function,
                         # Store the intersections from this iteration making sure to keep them ordered in s
                         dim_prev = copy(dim)
                         intersection_indices = update_intersection_bounds(pt_intercept, dim, coords, indices)
-                        new_intersection = MeshIntersection(s_intercept, pt_intercept, copy(dim), intersection_indices)
+                        new_intersection = MeshIntersection(Float64(s_intercept), pt_intercept, copy(dim), intersection_indices)
                         insert_sorted!(intersections_by_itr, new_intersection)
                         # TODO: Move this now that intersections are processed per step?
                         # For compound intersections: update the bounds in each dimension involved
@@ -162,7 +162,7 @@ function find_mesh_intersections(coords, curve::Function,
             stop_pt_val = curve(stop_pts[i_stop_pts])
             dim_stop_pt = zeros(Bool, numDim)
             stop_pt_indices = update_intersection_bounds(stop_pt_val, dim_stop_pt, coords, indices_lb)
-            new_stop_pt = MeshIntersection(stop_pts[i_stop_pts], stop_pt_val, 
+            new_stop_pt = MeshIntersection(Float64(stop_pts[i_stop_pts]), stop_pt_val, 
                                            dim_stop_pt, stop_pt_indices)
             insert_sorted!(intersections_by_itr, new_stop_pt) 
             i_stop_pts += 1
@@ -190,7 +190,7 @@ function find_mesh_intersections(coords, curve::Function,
         end
     end # s while-loop
 
-    if closed_list == true && length(intersections) > 0 && sum(intersections[1].pt - intersections[end].pt .> closure_tol) != 0
+    if closed_list == true && length(intersections) > 0 && sum(abs.(intersections[1].pt - intersections[end].pt) .> closure_tol) != 0
         push!(intersections, intersections[1])
     end
     

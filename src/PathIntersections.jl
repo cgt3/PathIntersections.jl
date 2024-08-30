@@ -66,7 +66,7 @@ const DEFAULT_CORNER_TOL = 1e-12
 const DEFAULT_CONTINUITY_TOL = 1e-12
 const DEFAULT_REF_DOMAIN = (-1,1)
 const DEFAULT_NORMALIZATION = false
-const DEFAULT_BINARY_REGIONS = false
+const DEFAULT_BINARY_REGIONS = true
 
 include("helper_functions.jl")
 

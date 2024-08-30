@@ -6,7 +6,7 @@ import LinearAlgebra.norm
 import ..PiecewiseCurve
 
 # Note: these are callable structs
-export Line, Ellipse, Circle, Pacman, Fish
+export Line, Ellipse, Circle, Pacman, Fish, BiconvexAirfoil
 
 struct Line{T_pt1, T_pt2} <: Function
     start_pt::T_pt1
@@ -56,6 +56,20 @@ struct Fish{T_x0, T_y0, float, T_pts, T_func} <: Function
     scale::float
     stop_pts::T_pts
     func::T_func
+end
+
+struct BiconvexAirfoil{Float64, T_x0, T_y0, T_pts, T_function} <: Function
+    R_top::Float64
+    R_btm::Float64
+    L::Float64 # chord length
+    t::Float64 # maximum thickness
+    AoA::Float64 # angle of attack, measured CLOCKWISE from the -x axis
+    x0::T_x0 # for the center of the chord line
+    y0::T_y0 # for the center of the chord line
+    scale::Float64
+    # These should not be set by users; calculated by the constructor
+    stop_pts::T_pts
+    func::T_function
 end
 
 # Needed to default arguments
@@ -179,6 +193,51 @@ function Fish(; scale=1, x0=0.0, y0=0.0)
     return Fish(x0, y0, scale, stop_pts, func)
 end
 
+# Default is the biconvex airfoil from Spring 2021 MECH 591 Gas Dynamics Exam I
+# normalized to a chord length of 1.
+function BiconvexAirfoil(; R1=40.0, R2=55.0, L=12.0, AoA=0.0, scale=1.0, x0=0.0, y0=0.0, normalize=true)
+    if L > R1 || L > R2
+        throw(error("PresentGeometries.jl: BiconvexAirfoil constructor: chord length must be smaller than both radii."))
+    end
+
+    # Compute the angles swept within each of the circles
+    theta1_trailing = acos(0.5*L/R1)
+    theta1_leading  = pi - theta1_trailing
+    
+    theta2_leading  =   pi + acos(0.5*L/R2)
+    theta2_trailing = 2*pi - acos(0.5*L/R2)
+
+    if normalize == true
+        R1 = R1 / L
+        R2 = R2 / L
+        L = 1.0
+    end
+    
+    # Compute the thickness
+    t_above = R1*(1-sin(theta1_trailing))
+    t_below = R2*(1-sin(acos(0.5*L/R2)))
+    t = t_above + t_below
+
+    # Calculate the circle centers relative to (x0, y0)
+    y1_0 = - (R1 - t_above)
+    y2_0 =   (R2 - t_below)
+
+    # Calculate arc length of each surface
+    arcL1 = R1*(theta1_leading - theta1_trailing)
+    arcL2 = R2*(theta2_trailing - theta2_leading)
+    stop_pts = (0.0, arcL1 / (arcL1 + arcL2), 1.0)
+
+    subcurves = (
+        Circle(R=scale*R1, x0=0.0, y0=scale*y1_0),
+        Circle(R=scale*R2, x0=0.0, y0=scale*y2_0)
+    )
+
+    sub_bounds = ( (theta1_trailing, theta1_leading)./(2*pi), (theta2_leading, theta2_trailing)./(2*pi) )
+
+    func = PiecewiseCurve(stop_pts, subcurves, sub_bounds)
+    return BiconvexAirfoil(R1, R2, L, t, AoA, x0, y0, scale, stop_pts, func)
+end
+
 # Make the structs callable
 function (L::Line)(s)
     return SVector( (L.end_pt[1] - L.start_pt[1])*s + L.start_pt[1], (L.end_pt[2] - L.start_pt[2])*s + L.start_pt[2] )
@@ -198,12 +257,19 @@ function (E::Ellipse)(s) # Also does circles
     return SVector(r*cos(theta + E.theta0) + E.x0, r*sin(theta + E.theta0) + E.y0)
 end
 
-function (p::Pacman)(s)
-    return p.func(s)
+function (P::Pacman)(s)
+    return P.func(s)
 end
 
-function(f::Fish)(s)
-    return f.func(s)
+function(F::Fish)(s)
+    return F.func(s)
+end
+
+function(B::BiconvexAirfoil)(s)
+    (x,y) = B.func(s)
+    r = norm((x,y))
+    theta = angle(x + y*im)
+    return SVector(r*cos(theta - B.AoA) + B.x0, r*sin(theta - B.AoA) + B.y0)
 end
     
 end # module
